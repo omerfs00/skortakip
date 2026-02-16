@@ -101,7 +101,7 @@
     async function checkLogin() {
         const u = document.getElementById('user').value.trim();
         const p = document.getElementById('pass').value.trim();
-        if((u === "Begüm" || u === "Ömer") && p === "1234") {
+        if((u === "Begüm" || u === "Ömer") && p === "1923#") {
             loggedInUser = u;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-site').style.display = 'block';
@@ -224,4 +224,5 @@
     function fireConfetti() { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#FF99C9', '#58FCEC'] }); }
 </script>
 </body>
+
 </html>
