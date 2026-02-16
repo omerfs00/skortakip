@@ -162,37 +162,58 @@
     }
 
     async function updateWeekData() {
-        const note = document.getElementById('new-note').value;
-        const vId = document.getElementById('new-song-id').value.trim();
-        const btn = document.getElementById('save-btn');
-        
-        if (!vId) { alert("Video ID boş olamaz!"); return; }
-        btn.disabled = true;
-        btn.innerText = "Şarkı Çekiliyor...";
+    const note = document.getElementById('new-note').value;
+    const vId = document.getElementById('new-song-id').value.trim();
+    const btn = document.getElementById('save-btn');
+    
+    if (!vId) { alert("Lütfen bir Video ID girin!"); return; }
+    
+    btn.disabled = true;
+    btn.innerText = "Güncelleniyor...";
 
-        try {
-            // Şarkı adını YouTube oEmbed üzerinden otomatik çekme
-            const resp = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vId}`);
-            const res = await resp.json();
-            const autoTitle = res.title || "Bilinmeyen Şarkı";
+    try {
+        // 1. Şarkı adını YouTube'dan çek (Otomasyon)
+        const resp = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vId}`);
+        const res = await resp.json();
+        const autoTitle = res.title || "Bilinmeyen Şarkı";
 
-            const { data: latest } = await _supabase.from('skor_verileri').select('id').order('id', {descending: true}).limit(1);
-            const { error } = await _supabase.from('skor_verileri').update({ 
+        // 2. EN ÖNEMLİ KISIM: En büyük ID'yi (En yeni haftayı) tam isabetle yakala
+        const { data: latestRecords, error: fetchError } = await _supabase
+            .from('skor_verileri')
+            .select('id')
+            .order('id', { descending: true }) // Büyükten küçüğe sırala (Örn: 3, 2, 1)
+            .limit(1);
+
+        if (fetchError || !latestRecords || latestRecords.length === 0) {
+            throw new Error("Güncellenecek satır bulunamadı!");
+        }
+
+        const targetId = latestRecords[0].id; // En büyük ID'yi aldık
+
+        // 3. Sadece o ID'ye sahip satırı güncelle
+        const { error: updateError } = await _supabase
+            .from('skor_verileri')
+            .update({ 
                 haftanin_notu: note, 
                 sarki_adi: autoTitle, 
                 sarki_linki: vId 
-            }).eq('id', latest[0].id);
+            })
+            .eq('id', targetId); // Hedef ID eşleşmesi
 
-            if(!error) { alert("Başarıyla Kaydedildi! 🎵"); location.reload(); }
-        } catch (e) {
-            alert("Otomatik ad çekilemedi ama ID kaydedildi.");
-            saveBackup(note, vId);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Verileri Kaydet";
+        if (!updateError) { 
+            alert(`Sürpriz Hazır: ${autoTitle} 🎉`); 
+            location.reload(); 
+        } else {
+            throw updateError;
         }
+    } catch (e) {
+        console.error("Hata detayı:", e);
+        alert("Güncelleme başarısız: " + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Verileri Kaydet";
     }
-
+}
     // Yardımlı Fonksiyonlar
     async function saveBackup(n, id) {
         const { data: l } = await _supabase.from('skor_verileri').select('id').order('id', {descending: true}).limit(1);
@@ -226,3 +247,4 @@
 </body>
 
 </html>
+
