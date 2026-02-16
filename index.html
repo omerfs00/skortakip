@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>📱 Skor Tablosu </title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root { 
+            --bg-color: #F8FAFC; --card-bg: #FFFFFF; --text-main: #303A2B;
+            --accent: #FF99C9; --periwinkle: #C1BDDB; --winner: #58FCEC; --record: #FFD700; --border: #E2E8F0;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; min-height: 100vh; }
+        
+        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 85vh; width: 100%; }
+        .login-card { background: var(--card-bg); padding: 30px; border-radius: 24px; text-align: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 95%; max-width: 350px; }
+        input { padding: 14px; margin: 8px 0; border: 2px solid var(--border); border-radius: 12px; width: 100%; outline: none; }
+        .login-btn { padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+        .login-btn:disabled { background: #CBD5E1; cursor: not-allowed; }
+
+        .container { background: var(--card-bg); padding: 25px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.05); width: 100%; max-width: 550px; display: none; margin: 20px auto 180px auto; border: 1px solid var(--border); text-align: center; }
+        .total-card { background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 25px; display: flex; justify-content: space-around; border: 2px solid var(--periwinkle); }
+        .total-val { font-size: 1.1rem; font-weight: 800; }
+
+        .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 350px; }
+        th, td { padding: 12px 5px; text-align: center; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        
+        .winner-cell { position: relative; cursor: pointer; }
+        .win-border { border-bottom: 3px solid var(--winner); }
+        .winner-text { font-weight: 800; color: #1e293b; }
+        
+        /* Rekor Sahibi (Altın Rengi) */
+        .record-holder { font-weight: 900; border-bottom: 4px solid var(--record) !important; color: #8B8000 !important; }
+        
+        .speech-bubble { visibility: hidden; background: var(--text-main); color: #fff; border-radius: 8px; padding: 10px; position: absolute; z-index: 100; bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: 0.3s; width: 140px; font-size: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .winner-cell:hover .speech-bubble { visibility: visible; opacity: 1; }
+
+        #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #F1F5F9; border-radius: 20px; border: 1.5px dashed var(--periwinkle); margin-bottom: 60px; text-align: left; }
+        .admin-input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 10px; border: 1px solid #CBD5E1; }
+
+        .music-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 2px solid var(--border); padding: 8px 0; display: none; justify-content: center; z-index: 999; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
+        #youtube-container { width: 95%; max-width: 450px; height: 90px; border-radius: 10px; overflow: hidden; background: #000; }
+
+        @media (max-width: 480px) { .container { padding: 15px; } th, td { font-size: 0.75rem; } }
+    </style>
+</head>
+<body>
+
+<div id="login-screen">
+    <div class="login-card">
+        <h2>🔒 Skor Paneli</h2>
+        <input type="text" id="user" placeholder="İsim (Begüm/Ömer)">
+        <input type="password" id="pass" placeholder="Şifre">
+        <button class="login-btn" onclick="checkLogin()">Giriş Yap</button>
+    </div>
+</div>
+
+<div class="container" id="main-site">
+    <h1 style="margin-bottom: 5px;">Skor Tablosu</h1>
+    <p style="color: #64748b; font-style: italic; margin-bottom: 20px; font-size: 0.9rem;">Keep scrolling..</p>
+
+    <div class="total-card">
+        <div>Begüm <br><span id="total-begum" class="total-val" style="color:var(--accent)">--:--</span></div>
+        <div style="width: 1px; background: var(--border);"></div>
+        <div>Ömer <br><span id="total-omer" class="total-val" style="color:var(--periwinkle)">--:--</span></div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Hafta</th><th>Begüm</th><th>Ömer</th><th>🎵 Şarkı</th></tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+
+    <div id="admin-panel">
+        <h4 style="margin:0 0 10px 0">🛠️ Kazanan Paneli</h4>
+        <label style="font-size:0.8rem">Haftalık Not:</label>
+        <input type="text" id="new-note" class="admin-input" placeholder="Haftalık mesajın..">
+        <label style="font-size:0.8rem">YouTube Video ID:</label>
+        <input type="text" id="new-song-id" class="admin-input" placeholder="Örn: dQw4w9WgXcQ">
+        <button id="save-btn" class="login-btn" onclick="updateWeekData()" style="margin-top:10px">Verileri Kaydet</button>
+        <p style="font-size:0.7rem; color:gray; margin-top:5px">* Şarkı adı otomatik çekilecektir.</p>
+    </div>
+</div>
+
+<div class="music-bar" id="music-player">
+    <div id="youtube-container"></div>
+</div>
+
+<script>
+    const SB_URL = "https://yczoplqskmrolpbdbsnp.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inljem9wbHFza21yb2xwYmRic25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDQ3ODAsImV4cCI6MjA4NjU4MDc4MH0.hmEnEHugyTU6gLkFHJ9qsMVKETWCI6YN24SShfol6sc";
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
+    let loggedInUser = "";
+
+    async function checkLogin() {
+        const u = document.getElementById('user').value.trim();
+        const p = document.getElementById('pass').value.trim();
+        if((u === "Begüm" || u === "Ömer") && p === "1234") {
+            loggedInUser = u;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-site').style.display = 'block';
+            document.getElementById('music-player').style.display = 'flex';
+            fetchData();
+        } else { alert("Geçersiz giriş!"); }
+    }
+
+    async function fetchData() {
+        const { data, error } = await _supabase.from('skor_verileri').select('*').order('id', { ascending: true });
+        if (data && data.length > 0) {
+            renderTable(data);
+            showAdminIfWinner(data);
+        }
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = ""; 
+        let tOmer = 0, tBegum = 0;
+
+        // 1. Rekor Mantığı (Yüksek olan kazanır): Math.max
+        let allTimes = [];
+        data.forEach(d => {
+            if(d.omer_sure) allTimes.push(toMinutes(d.omer_sure));
+            if(d.begum_sure) allTimes.push(toMinutes(d.begum_sure));
+        });
+        const bestTime = Math.max(...allTimes);
+
+        // 2. Tabloyu Doldur
+        data.forEach(d => {
+            const mO = toMinutes(d.omer_sure); const mB = toMinutes(d.begum_sure);
+            tOmer += mO; tBegum += mB;
+            const bWin = mB > mO;
+            const bIsRecord = mB === bestTime && mB > 0;
+            const oIsRecord = mO === bestTime && mO > 0;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${d.hafta}</td>
+                    <td class="winner-cell ${bWin ? 'winner-text win-border' : ''} ${bIsRecord ? 'record-holder' : ''}" onclick="${bWin ? 'fireConfetti()' : ''}">
+                        ${d.begum_sure} ${bWin ? '👑' : ''} ${bIsRecord ? '🔥' : ''}
+                        ${bWin ? `<span class="speech-bubble">${d.haftanin_notu || '...'}</span>` : ''}
+                    </td>
+                    <td class="winner-cell ${!bWin ? 'winner-text win-border' : ''} ${oIsRecord ? 'record-holder' : ''}" onclick="${!bWin ? 'fireConfetti()' : ''}">
+                        ${d.omer_sure} ${!bWin ? '👑' : ''} ${oIsRecord ? '🔥' : ''}
+                        ${!bWin ? `<span class="speech-bubble">${d.haftanin_notu || '...'}</span>` : ''}
+                    </td>
+                    <td style="font-size: 0.7rem; color: #64748b; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${d.sarki_adi || '-'}
+                    </td>
+                </tr>`;
+        });
+        
+        document.getElementById('total-begum').innerText = formatTime(tBegum);
+        document.getElementById('total-omer').innerText = formatTime(tOmer);
+        updateMusic(data[data.length - 1]);
+    }
+
+    async function updateWeekData() {
+        const note = document.getElementById('new-note').value;
+        const vId = document.getElementById('new-song-id').value.trim();
+        const btn = document.getElementById('save-btn');
+        
+        if (!vId) { alert("Video ID boş olamaz!"); return; }
+        btn.disabled = true;
+        btn.innerText = "Şarkı Çekiliyor...";
+
+        try {
+            // Şarkı adını YouTube oEmbed üzerinden otomatik çekme
+            const resp = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vId}`);
+            const res = await resp.json();
+            const autoTitle = res.title || "Bilinmeyen Şarkı";
+
+            const { data: latest } = await _supabase.from('skor_verileri').select('id').order('id', {descending: true}).limit(1);
+            const { error } = await _supabase.from('skor_verileri').update({ 
+                haftanin_notu: note, 
+                sarki_adi: autoTitle, 
+                sarki_linki: vId 
+            }).eq('id', latest[0].id);
+
+            if(!error) { alert("Başarıyla Kaydedildi! 🎵"); location.reload(); }
+        } catch (e) {
+            alert("Otomatik ad çekilemedi ama ID kaydedildi.");
+            saveBackup(note, vId);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Verileri Kaydet";
+        }
+    }
+
+    // Yardımlı Fonksiyonlar
+    async function saveBackup(n, id) {
+        const { data: l } = await _supabase.from('skor_verileri').select('id').order('id', {descending: true}).limit(1);
+        await _supabase.from('skor_verileri').update({ haftanin_notu: n, sarki_linki: id }).eq('id', l[0].id);
+        location.reload();
+    }
+
+    function updateMusic(last) {
+        if(last && last.sarki_linki) {
+            const vId = last.sarki_linki.trim();
+            document.getElementById('youtube-container').innerHTML = `
+                <iframe width="100%" height="100%" 
+                src="https://www.youtube-nocookie.com/embed/${vId}?rel=0&modestbranding=1" 
+                frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen></iframe>`;
+        }
+    }
+
+    function showAdminIfWinner(data) {
+        const last = data[data.length - 1];
+        const winner = last.begum_sure > last.omer_sure ? "Begüm" : "Ömer";
+        if(loggedInUser === winner) {
+            document.getElementById('admin-panel').style.display = 'block';
+        }
+    }
+
+    function toMinutes(v) { if(!v) return 0; const p = v.toString().split('.'); return (parseInt(p[0])*60) + (p[1] ? parseInt(p[1].padEnd(2,'0')) : 0); }
+    function formatTime(tm) { return `${Math.floor(tm/60)}s ${tm%60 < 10 ? '0'+(tm%60) : tm%60}dk`; }
+    function fireConfetti() { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#FF99C9', '#58FCEC'] }); }
+</script>
+</body>
+</html>
