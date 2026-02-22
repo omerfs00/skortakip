@@ -94,17 +94,32 @@
     let loggedInUser = "";
 
     async function checkLogin() {
-        const u = document.getElementById('user').value.trim();
-        const p = document.getElementById('pass').value.trim();
-        // Şifre 1923# olarak güncellendi
-        if((u === "Begüm" || u === "Ömer") && p === "1923#") {
-            loggedInUser = u;
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-site').style.display = 'block';
-            document.getElementById('music-player').style.display = 'flex';
-            fetchData();
-        } else { alert("Geçersiz giriş!"); }
+    const u = document.getElementById('user').value.trim();
+    const p = document.getElementById('pass').value.trim();
+
+    // 1923# şifre kontrolü
+    if((u === "Begüm" || u === "Ömer") && p === "1923#") {
+        loggedInUser = u;
+
+        // --- LOG KAYDETME KISMI BURADA ---
+        try {
+            await _supabase.from('login_logs').insert([
+                { user_name: u, login_at: new Date().toISOString() }
+            ]);
+            console.log("Giriş başarıyla loglandı.");
+        } catch (logError) {
+            console.error("Log kaydedilemedi:", logError);
+        }
+        // ---------------------------------
+
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-site').style.display = 'block';
+        document.getElementById('music-player').style.display = 'flex';
+        fetchData();
+    } else { 
+        alert("Geçersiz giriş!"); 
     }
+}
 
     async function fetchData() {
         // En yeni haftayı en üstte göstermek için { ascending: false }
@@ -196,3 +211,4 @@
 </script>
 </body>
 </html>
+
