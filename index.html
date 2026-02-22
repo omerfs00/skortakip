@@ -8,8 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root { 
-            --bg-color: #F8FAFC; --card-bg: #FFFFFF; --text-main: #303A2B;
-            --accent: #FF99C9; --periwinkle: #C1BDDB; --winner: #58FCEC; --record: #FFD700; --border: #E2E8F0;
+            --bg-color: #FDF2F8; --card-bg: #FFFFFF; --text-main: #303A2B;
+            --accent: #FF99C9; --periwinkle: #C1BDDB; --winner: #58FCEC; --record: #FFD700; --border: #FCE7F3;
         }
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; min-height: 100vh; }
@@ -19,8 +19,17 @@
         input { padding: 14px; margin: 8px 0; border: 2px solid var(--border); border-radius: 12px; width: 100%; outline: none; }
         .login-btn { padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
 
-        .container { background: var(--card-bg); padding: 25px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.05); width: 100%; max-width: 550px; display: none; margin: 20px auto 180px auto; border: 1px solid var(--border); text-align: center; }
-        .total-card { background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 25px; display: flex; justify-content: space-around; border: 2px solid var(--periwinkle); }
+        /* KPSS Bilgi Kartı - Yeni Tasarım */
+        #kpss-box { 
+            background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; 
+            margin: 15px auto; width: 95%; max-width: 550px; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(255, 153, 201, 0.15); display: none; text-align: center;
+        }
+        #kpss-box:active { transform: scale(0.97); }
+        #kpss-content { font-size: 0.9rem; font-weight: 600; line-height: 1.5; color: #86198F; }
+
+        .container { background: var(--card-bg); padding: 25px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.05); width: 100%; max-width: 550px; display: none; margin: 0 auto 180px auto; border: 1px solid var(--border); text-align: center; }
+        .total-card { background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 25px; display: flex; justify-content: space-around; border: 2px solid var(--accent); }
         .total-val { font-size: 1.1rem; font-weight: 800; }
 
         .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 20px; }
@@ -32,33 +41,35 @@
         .winner-text { font-weight: 800; color: #1e293b; }
         .record-holder { font-weight: 900; border-bottom: 4px solid var(--record) !important; color: #8B8000 !important; }
         
-        .speech-bubble { visibility: hidden; background: var(--text-main); color: #fff; border-radius: 8px; padding: 10px; position: absolute; z-index: 100; bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: 0.3s; width: 140px; font-size: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        /* Tooltip (Konuşma Balonu) Stili */
+        .speech-bubble { visibility: hidden; background: var(--text-main); color: #fff; border-radius: 8px; padding: 10px; position: absolute; z-index: 100; bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: 0.3s; width: 140px; font-size: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); pointer-events: none; }
         .winner-cell:hover .speech-bubble { visibility: visible; opacity: 1; }
 
-        #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #F1F5F9; border-radius: 20px; border: 1.5px dashed var(--periwinkle); margin-bottom: 80px; text-align: left; }
-        .admin-input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 10px; border: 1px solid #CBD5E1; }
+        #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); margin-bottom: 80px; text-align: left; }
+        .admin-input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--border); }
 
         .music-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 2px solid var(--border); padding: 8px 0; display: none; justify-content: center; z-index: 999; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
         #youtube-container { width: 95%; max-width: 450px; height: 90px; border-radius: 10px; overflow: hidden; background: #000; }
-
-        @media (max-width: 480px) { .container { padding: 15px; } th, td { font-size: 0.75rem; } }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-card">
-        <h2>🔒 Skor Paneli</h2>
+        <h2>🔒 Giriş</h2>
         <input type="text" id="user" placeholder="İsim (Begüm / Ömer)">
         <input type="password" id="pass" placeholder="Şifre">
         <button class="login-btn" onclick="checkLogin()">Giriş Yap</button>
     </div>
 </div>
 
-<div class="container" id="main-site">
-    <h1>Skor Tablosu</h1>
-    <p style="color: #64748b; font-style: italic; margin-bottom: 20px; font-size: 0.9rem;">Keep scrolling..</p>
+<div id="kpss-box" onclick="showNextFact()">
+    <div id="kpss-content">Yükleniyor...</div>
+</div>
 
+<div class="container" id="main-site">
+    <h2 style="color:var(--accent); margin-bottom: 20px;">Haftalık Durum</h2>
+    
     <div class="total-card">
         <div>Begüm <br><span id="total-begum" class="total-val" style="color:var(--accent)">--:--</span></div>
         <div style="width: 1px; background: var(--border);"></div>
@@ -75,10 +86,10 @@
     </div>
 
     <div id="admin-panel">
-        <h4 style="margin:0 0 10px 0">🛠️ Kazanan Paneli</h4>
-        <input type="text" id="new-note" class="admin-input" placeholder="Haftalık mesajın..">
+        <h4 style="margin:0 0 10px 0">🛠️ Güncelleme</h4>
+        <input type="text" id="new-note" class="admin-input" placeholder="Bu haftanın notu..">
         <input type="text" id="new-song-id" class="admin-input" placeholder="YouTube Video ID">
-        <button id="save-btn" class="login-btn" onclick="updateWeekData()" style="margin-top:10px">Verileri Kaydet</button>
+        <button id="save-btn" class="login-btn" onclick="updateWeekData()" style="margin-top:10px">Kaydet</button>
     </div>
 </div>
 
@@ -87,6 +98,46 @@
 </div>
 
 <script>
+    const kpssData = [
+        "Yeni Zigana Tüneli: 14,5 km ile Türkiye ve Avrupa'nın en uzun çift tüplü tüneli.",
+        "Yusufeli Barajı: Çoruh Nehri üzerinde, Türkiye'nin en yüksek barajı.",
+        "En Son İl: Düzce (Türkiye'nin 81. ili).",
+        "İlk Milli Park: Yozgat Çamlığı.",
+        "UNESCO 2023: Gordion Antik Kenti (Ankara), listeye giren 20. varlığımız.",
+        "İlk Kadın Vali: Lale Aytaman (Muğla).",
+        "İlk Kadın Başbakan: Tansu Çiller.",
+        "En Yüksek Dağ: Ağrı Dağı (5137 m).",
+        "En Kalabalık Şehir: İstanbul.",
+        "İlk Yazılı Anayasa: Kanun-i Esasi (1876).",
+        "Sinekli Bakkal: Halide Edip Adıvar'ın en ünlü eseri.",
+        "Milletvekili Sayısı: TBMM'de 600 milletvekili bulunur.",
+        "Anayasa Mahkemesi: 15 üyeden oluşur.",
+        "Sabiha Gökçen: Dünyanın ilk kadın savaş pilotu.",
+        "Mimar Sinan: Süleymaniye Camii onun 'Kalfalık' eseridir.",
+        "Safranbolu: Türkiye'nin son dahil edilen Sakin Şehirlerinden (Cittaslow) biridir.",
+        "UNESCO 2024: Anadolu'nun Ortaçağ Dönemi Ahşap Hipostil Camileri listeye eklenen 21. varlığımızdır.",
+        "Nutuk: Atatürk'ün bu eseri 1919 ile 1927 yılları arasındaki süreci anlatır.",
+        "Milletvekili Seçilme Yaşı: 2017 değişikliği ile 18 yaşını dolduran her Türk vatandaşı seçilebilir.",
+        "HSK: Hakimler ve Savcılar Kurulu toplam 13 üyeden oluşmaktadır.",
+        "Kadeş Antlaşması: Hititler ve Mısır arasında imzalanan tarihin ilk yazılı antlaşmasıdır.",
+        "Yusufeli Barajı: Artvin'de bulunan, Türkiye'nin en yüksek barajıdır.",
+        "Mimar Sinan: Edirne'deki Selimiye Camii için 'Ustalık Eserim' demiştir.",
+        "İstiklal Marşı: İlk kez 1921 Anayasası'nda yer almış, Sebilürreşad dergisinde yayımlanmıştır.",
+        "Anayasa Mahkemesi: 15 üyeden oluşur ve üyeleri 12 yıl için seçilir.",
+        "Sabiha Gökçen: Dünyanın ilk kadın savaş pilotudur.",
+        "Gül Esin: Türkiye'nin ilk kadın muhtarıdır (Aydın - Çine).",
+        "Gordion Antik Kenti: Ankara'da bulunan ve UNESCO listesine giren 20. varlığımızdır.",
+        "En Uzun Sınırımız: Suriye sınırı, en kısa sınırımız ise Nahçıvan (Azerbaycan) sınırıdır.",
+        "Cumhurbaşkanlığı Kararnamesi: İlk kez 1982 Anayasası ile hukuk sistemimize girmiştir."
+    ];
+    let currentFactIndex = 0;
+
+    function showNextFact() {
+        currentFactIndex = (currentFactIndex + 1) % kpssData.length;
+        document.getElementById('kpss-content').innerText = kpssData[currentFactIndex];
+    }
+    setInterval(showNextFact, 15000);
+
     const SB_URL = "https://yczoplqskmrolpbdbsnp.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inljem9wbHFza21yb2xwYmRic25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDQ3ODAsImV4cCI6MjA4NjU4MDc4MH0.hmEnEHugyTU6gLkFHJ9qsMVKETWCI6YN24SShfol6sc";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
@@ -95,27 +146,19 @@
     async function checkLogin() {
         const u = document.getElementById('user').value.trim();
         const p = document.getElementById('pass').value.trim();
-
         if((u === "Begüm" || u === "Ömer") && p === "1923#") {
             loggedInUser = u;
-
-            // 400 Hatasını Çözen Log Mantığı
-            try {
-                await _supabase.from('login_logs').insert([{ user_name: u }]);
-                console.log("Giriş başarıyla loglandı.");
-            } catch (err) {
-                console.error("Log kaydedilemedi:", err);
-            }
-
+            try { await _supabase.from('login_logs').insert([{ user_name: u }]); } catch (err) {}
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-site').style.display = 'block';
             document.getElementById('music-player').style.display = 'flex';
+            document.getElementById('kpss-box').style.display = 'block';
+            document.getElementById('kpss-content').innerText = kpssData[0];
             fetchData();
-        } else { alert("Geçersiz giriş!"); }
+        } else { alert("Giriş başarısız!"); }
     }
 
     async function fetchData() {
-        // En yeni hafta en üstte
         const { data } = await _supabase.from('skor_verileri').select('*').order('id', { ascending: false });
         if (data) { renderTable(data); showAdminIfWinner(data); }
     }
@@ -161,31 +204,21 @@
         const vId = document.getElementById('new-song-id').value.trim();
         const btn = document.getElementById('save-btn');
         if (!vId) return;
-        btn.disabled = true; btn.innerText = "İşleniyor...";
-
+        btn.disabled = true; btn.innerText = "Yükleniyor...";
         try {
             const resp = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vId}`);
             const res = await resp.json();
-            const autoTitle = res.title || "Bilinmeyen Şarkı";
-
-            // En büyük ID'yi tam isabetle yakala
-            const { data: records } = await _supabase.from('skor_verileri')
-                .select('id').order('id', { ascending: false }).limit(1);
-
-            const targetId = records[0].id;
-
-            const { error } = await _supabase.from('skor_verileri').update({ 
-                haftanin_notu: note, sarki_adi: autoTitle, sarki_linki: vId 
-            }).eq('id', targetId);
-
-            if(!error) location.reload();
-        } catch (e) { alert("Hata oluştu."); } finally { btn.disabled = false; btn.innerText = "Verileri Kaydet"; }
+            const { data: records } = await _supabase.from('skor_verileri').select('id').order('id', { ascending: false }).limit(1);
+            await _supabase.from('skor_verileri').update({ 
+                haftanin_notu: note, sarki_adi: res.title || "Şarkı", sarki_linki: vId 
+            }).eq('id', records[0].id);
+            location.reload();
+        } catch (e) { alert("Hata!"); } finally { btn.disabled = false; btn.innerText = "Kaydet"; }
     }
 
     function updateMusic(last) {
         if(last && last.sarki_linki) {
-            const vId = last.sarki_linki.trim();
-            document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${vId}?rel=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+            document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${last.sarki_linki.trim()}?rel=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
         }
     }
 
@@ -201,4 +234,3 @@
 </script>
 </body>
 </html>
-
