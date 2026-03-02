@@ -41,9 +41,36 @@
         .winner-text { font-weight: 800; color: #1e293b; }
         .record-holder { font-weight: 900; border-bottom: 4px solid var(--record) !important; color: #8B8000 !important; }
         
-        /* Tooltip (Konuşma Balonu) Stili */
-        .speech-bubble { visibility: hidden; background: var(--text-main); color: #fff; border-radius: 8px; padding: 10px; position: absolute; z-index: 100; bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: 0.3s; width: 140px; font-size: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); pointer-events: none; }
+        /* Tooltip (Konuşma Balonu) Stili - GÜNCELLENDİ */
+        .speech-bubble { 
+            visibility: hidden; 
+            background: var(--text-main); 
+            color: #fff; 
+            border-radius: 8px; 
+            padding: 10px; 
+            position: absolute; 
+            z-index: 1000; 
+            bottom: 115%; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            opacity: 0; 
+            transition: 0.3s; 
+            min-width: 140px; 
+            max-width: 200px; 
+            width: max-content;
+            font-size: 0.75rem; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            pointer-events: none; 
+            white-space: normal; 
+            word-wrap: break-word; 
+        }
         .winner-cell:hover .speech-bubble { visibility: visible; opacity: 1; }
+
+        /* En üst satırda notun yukarıda kaybolmasını önlemek için balonun aşağıda gösterilmesini sağlar */
+        tr:first-child .speech-bubble {
+            bottom: auto;
+            top: 115%;
+        }
 
         #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); margin-bottom: 80px; text-align: left; }
         .admin-input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--border); }
