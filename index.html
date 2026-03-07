@@ -3,129 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>📱 Skor Tablosu </title>
+    <title>📱 Skor Tablosu - v33</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        :root { 
-            --bg-color: #FDF2F8; --card-bg: #FFFFFF; --text-main: #303A2B;
-            --accent: #FF99C9; --periwinkle: #C1BDDB; --winner: #58FCEC; --record: #FFD700; --border: #FCE7F3;
-        }
+        :root { --bg-color: #FDF2F8; --card-bg: #FFFFFF; --text-main: #303A2B; --accent: #FF99C9; --periwinkle: #C1BDDB; --winner: #58FCEC; --record: #FFD700; --border: #FCE7F3; }
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; min-height: 100vh; }
-        
-        /* Login */
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 85vh; width: 100%; }
         .login-card { background: var(--card-bg); padding: 30px; border-radius: 24px; text-align: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 95%; max-width: 350px; }
         input { padding: 14px; margin: 8px 0; border: 2px solid var(--border); border-radius: 12px; width: 100%; outline: none; }
         .login-btn { padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
-
-        /* KPSS Bilgi Kartı */
         #kpss-box { background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; margin: 15px auto; width: 95%; max-width: 550px; cursor: pointer; text-align: center; display: none; }
-        #kpss-content { font-size: 0.9rem; font-weight: 600; line-height: 1.5; color: #86198F; }
-
-        /* Ana Konteyner */
         .container { background: var(--card-bg); padding: 25px; border-radius: 30px; width: 100%; max-width: 550px; display: none; margin: 0 auto 20px auto; border: 1px solid var(--border); text-align: center; }
-        
-        /* Skor Barı */
         .progress-container { width: 100%; height: 12px; background: #eee; border-radius: 10px; margin: 15px 0; overflow: hidden; display: flex; }
-        #bar-begum { height: 100%; background: var(--accent); transition: 0.5s; width: 50%; }
-        #bar-omer { height: 100%; background: var(--periwinkle); transition: 0.5s; width: 50%; }
-
+        #bar-begum { height: 100%; background: var(--accent); transition: 0.5s; }
+        #bar-omer { height: 100%; background: var(--periwinkle); transition: 0.5s; }
         .total-card { background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 5px; display: flex; justify-content: space-around; border: 2px solid var(--accent); }
-        .total-val { font-size: 1.1rem; font-weight: 800; }
-
-        /* Tablo */
         .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; min-width: 350px; }
         th, td { padding: 12px 5px; text-align: center; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-        
         .winner-cell { position: relative; cursor: pointer; }
         .win-border { border-bottom: 3px solid var(--winner); }
         .winner-text { font-weight: 800; color: #1e293b; }
         .record-holder { font-weight: 900; border-bottom: 4px solid var(--record) !important; color: #8B8000 !important; }
-        
-        /* Tooltip (Konuşma Balonu) */
-        .speech-bubble { 
-            visibility: hidden; background: var(--text-main); color: #fff; border-radius: 8px; padding: 10px; 
-            position: absolute; z-index: 1000; bottom: 120%; left: 50%; transform: translateX(-50%); 
-            opacity: 0; transition: 0.3s; min-width: 140px; max-width: 220px; width: max-content;
-            font-size: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); white-space: normal; word-wrap: break-word; pointer-events: none;
-        }
+        .speech-bubble { visibility: hidden; background: var(--text-main); color: #fff; border-radius: 8px; padding: 10px; position: absolute; z-index: 1000; bottom: 120%; left: 50%; transform: translateX(-50%); opacity: 0; transition: 0.3s; min-width: 140px; max-width: 220px; width: max-content; font-size: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); white-space: normal; word-wrap: break-word; pointer-events: none; }
         .winner-cell:hover .speech-bubble { visibility: visible; opacity: 1; }
         tr:first-child .speech-bubble { bottom: auto; top: 120%; }
 
-        /* XOX Bölümü */
-        #xox-section { background: white; border-radius: 30px; padding: 25px; margin: 20px auto 180px auto; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; display: none; }
-        .xox-scores { display: flex; justify-content: space-around; margin-bottom: 15px; font-weight: 800; font-size: 1.1rem; }
-        .xox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 220px; margin: 0 auto; }
-        .xox-cell { background: #FFF5F9; border: 2px solid var(--border); height: 65px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 900; border-radius: 15px; cursor: pointer; transition: 0.2s; }
-        .xox-cell:hover { background: #fdf2f8; transform: scale(1.02); }
-
-        /* Arşiv Modalı */
+        /* XOX 6x6 CSS */
+        #xox-section { background: white; border-radius: 30px; padding: 20px; margin: 20px auto 180px auto; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; display: none; }
+        .xox-scores { display: flex; justify-content: space-around; margin-bottom: 5px; font-weight: 800; }
+        .round-puan { font-size: 0.8rem; color: #64748b; margin-bottom: 10px; }
+        .xox-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; width: 300px; margin: 0 auto; }
+        .xox-cell { background: #FFF5F9; border: 1px solid var(--border); height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        
         #history-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 400px; max-height: 70vh; overflow-y: auto; text-align: center; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; font-weight: 600; }
-        .delete-btn { color: #ff4d4d; cursor: pointer; font-size: 1.2rem; padding: 5px; }
-
-        /* Admin Paneli */
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
         #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); text-align: left; }
         .admin-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); }
-
-        /* Müzik Barı */
-        .music-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 2px solid var(--border); padding: 8px 0; display: none; justify-content: center; z-index: 999; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
+        .music-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 2px solid var(--border); padding: 8px 0; display: none; justify-content: center; z-index: 999; }
         #youtube-container { width: 95%; max-width: 450px; height: 90px; border-radius: 12px; overflow: hidden; background: #000; }
     </style>
 </head>
 <body>
-
-<div id="login-screen">
-    <div class="login-card">
-        <h2>🔒 Giriş</h2>
-        <input type="text" id="user" placeholder="İsim (Begüm / Ömer)">
-        <input type="password" id="pass" placeholder="Şifre">
-        <button class="login-btn" onclick="checkLogin()">Giriş Yap</button>
-    </div>
-</div>
-
-<div id="kpss-box" onclick="showNextFact()">
-    <div id="kpss-content">Yükleniyor...</div>
-</div>
-
+<div id="login-screen"><div class="login-card"><h2>🔒 Giriş</h2><input type="text" id="user" placeholder="Begüm / Ömer"><input type="password" id="pass" placeholder="Şifre"><button class="login-btn" onclick="checkLogin()">Giriş Yap</button></div></div>
+<div id="kpss-box" onclick="showNextFact()"><div id="kpss-content">Yükleniyor...</div></div>
 <div class="container" id="main-site">
-    <div class="total-card">
-        <div>Begüm <br><span id="total-begum" class="total-val" style="color:var(--accent)">--:--</span></div>
-        <div style="width: 1px; background: var(--border);"></div>
-        <div>Ömer <br><span id="total-omer" class="total-val" style="color:var(--periwinkle)">--:--</span></div>
-    </div>
+    <div class="total-card"><div>Begüm <br><span id="total-begum" class="total-val" style="color:var(--accent)">--:--</span></div><div style="width: 1px; background: var(--border);"></div><div>Ömer <br><span id="total-omer" class="total-val" style="color:var(--periwinkle)">--:--</span></div></div>
     <div class="progress-container"><div id="bar-begum"></div><div id="bar-omer"></div></div>
-
-    <div class="table-wrapper">
-        <table>
-            <thead><tr><th>Hafta</th><th>Begüm</th><th>Ömer</th><th>🎵 Şarkı</th></tr></thead>
-            <tbody id="table-body"></tbody>
-        </table>
-    </div>
-
-    <div id="admin-panel">
-        <h4 style="margin:0 0 5px 0">🛠️ Haftayı Güncelle</h4>
-        <input type="text" id="new-note" class="admin-input" placeholder="Bu haftanın mesajı..">
-        <input type="text" id="new-song-id" class="admin-input" placeholder="YouTube Video ID">
-        <button id="save-btn" class="login-btn" onclick="updateWeekData()">Kaydet</button>
-    </div>
+    <div class="table-wrapper"><table><thead><tr><th>Hafta</th><th>Begüm</th><th>Ömer</th><th>🎵 Şarkı</th></tr></thead><tbody id="table-body"></tbody></table></div>
+    <div id="admin-panel"><h4 style="margin:0 0 5px 0">🛠️ Güncelleme</h4><input type="text" id="new-note" class="admin-input"><input type="text" id="new-song-id" class="admin-input" placeholder="YouTube Video ID"><button id="save-btn" class="login-btn" onclick="updateWeekData()">Kaydet</button></div>
 </div>
-
 <div id="xox-section">
-    <div class="xox-scores">
-        <div style="color: var(--accent);">Begüm: <span id="xox-begum-score">0</span></div>
-        <div style="color: var(--periwinkle);">Ömer: <span id="xox-omer-score">0</span></div>
-    </div>
-    <p id="xox-status" style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Bağlanıyor...</p>
+    <div class="xox-scores"><div style="color: var(--accent);">B: <span id="xox-begum-win">0</span></div><div style="color: var(--periwinkle);">Ö: <span id="xox-omer-win">0</span></div></div>
+    <div class="round-puan">Bu Tur Puanı: <span style="color:var(--accent)" id="r-begum">0</span> - <span style="color:var(--periwinkle)" id="r-omer">0</span></div>
+    <p id="xox-status" style="font-size: 0.8rem; color: #64748b; margin-bottom: 10px;">Bağlanıyor...</p>
     <div class="xox-grid" id="xox-grid"></div>
 </div>
-
-<div id="history-modal"><div class="modal-content"><h3 style="margin-top:0">🎵 Şarkı Arşivi</h3><div id="history-list"></div><button class="login-btn" onclick="closeModal()" style="margin-top:15px">Kapat</button></div></div>
-
+<div id="history-modal"><div class="modal-content"><h3>🎵 Arşiv</h3><div id="history-list"></div><button class="login-btn" onclick="closeModal()" style="margin-top:10px">Kapat</button></div></div>
 <div class="music-bar" id="music-player"><div id="youtube-container"></div></div>
 
 <script>
@@ -144,7 +81,6 @@
         const p = document.getElementById('pass').value.trim();
         if((u === "Begüm" || u === "Ömer") && p === "1923#") {
             loggedInUser = u;
-            try { await _supabase.from('login_logs').insert([{ user_name: u }]); } catch (e) {}
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-site').style.display = 'block';
             document.getElementById('music-player').style.display = 'flex';
@@ -175,84 +111,21 @@
         let allTimes = [];
         data.forEach(d => { if(d.omer_sure) allTimes.push(toMinutes(d.omer_sure)); if(d.begum_sure) allTimes.push(toMinutes(d.begum_sure)); });
         const best = Math.max(...allTimes);
-
         data.forEach(d => {
             const mO = toMinutes(d.omer_sure); const mB = toMinutes(d.begum_sure);
             tO += mO; tB += mB;
             const bWin = mB > mO;
-            tbody.innerHTML += `
-                <tr>
-                    <td>${d.hafta}</td>
-                    <td class="winner-cell ${bWin?'winner-text win-border':''} ${mB===best?'record-holder':''}" onclick="${bWin?'fireConfetti()':''}">
-                        ${d.begum_sure}${bWin?'👑':''}${mB===best?'🔥':''}
-                        <span class="speech-bubble">${d.haftanin_notu || '...'}</span>
-                    </td>
-                    <td class="winner-cell ${!bWin?'winner-text win-border':''} ${mO===best?'record-holder':''}" onclick="${!bWin?'fireConfetti()':''}">
-                        ${d.omer_sure}${!bWin?'👑':''}${mO===best?'🔥':''}
-                        <span class="speech-bubble">${d.haftanin_notu || '...'}</span>
-                    </td>
-                    <td style="font-size: 0.7rem; color: #64748b;">
-                        ${d.sarki_adi || '-'}<br>
-                        <span onclick="openHistory(${d.id})" style="cursor:pointer; font-size:1.1rem;">📜</span>
-                    </td>
-                </tr>`;
+            tbody.innerHTML += `<tr><td>${d.hafta}</td><td class="winner-cell ${bWin?'winner-text win-border':''} ${mB===best?'record-holder':''}" onclick="${bWin?'fireConfetti()':''}">${d.begum_sure}${bWin?'👑':''}${mB===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td><td class="winner-cell ${!bWin?'winner-text win-border':''} ${mO===best?'record-holder':''}" onclick="${!bWin?'fireConfetti()':''}">${d.omer_sure}${!bWin?'👑':''}${mO===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td><td style="font-size: 0.7rem; color: #64748b;">${d.sarki_adi || '-'}<br><span onclick="openHistory(${d.id})" style="cursor:pointer; font-size:1.1rem;">📜</span></td></tr>`;
         });
         document.getElementById('total-begum').innerText = formatTime(tB);
         document.getElementById('total-omer').innerText = formatTime(tO);
         updateMusic(data[0]);
     }
 
-    async function openHistory(weekId) {
-        document.getElementById('history-modal').style.display = 'flex';
-        const { data: weekData } = await _supabase.from('skor_verileri').select('*').eq('id', weekId).single();
-        const currentWinner = weekData.begum_sure > weekData.omer_sure ? "Begüm" : "Ömer";
-        const { data: historyData } = await _supabase.from('sarki_gecmisi').select('*').eq('week_id', weekId).order('created_at', { ascending: false });
-        const list = document.getElementById('history-list');
-        list.innerHTML = "";
-        const seenLinks = new Set();
-        const canDelete = loggedInUser === currentWinner;
-        
-        if (weekData.sarki_linki) {
-            seenLinks.add(weekData.sarki_linki);
-            list.innerHTML += `<div class="history-item" style="background: #FFF5F9; border-radius: 8px;"><span>🌟 ${weekData.sarki_adi} (Aktif)</span>${canDelete ? `<span class="delete-btn" title="Aktif şarkı silinemez" style="opacity:0.3; cursor:not-allowed">🗑️</span>` : ''}</div>`;
-        }
-        
-        historyData.forEach(s => {
-            if (!seenLinks.has(s.sarki_linki)) {
-                seenLinks.add(s.sarki_linki);
-                list.innerHTML += `<div class="history-item"><span>${s.sarki_adi}</span>${canDelete ? `<span class="delete-btn" onclick="deleteSong(${s.id}, ${weekId})">🗑️</span>` : ''}</div>`;
-            }
-        });
-        if(list.innerHTML === "") list.innerHTML = "<p style='color:gray'>Henüz arşiv boş.</p>";
-    }
-
-    async function deleteSong(id, weekId) { if(confirm("Silinsin mi?")) { await _supabase.from('sarki_gecmisi').delete().eq('id', id); openHistory(weekId); }}
-    function closeModal() { document.getElementById('history-modal').style.display = 'none'; }
-
-    async function updateWeekData() {
-        const note = document.getElementById('new-note').value;
-        const vId = document.getElementById('new-song-id').value.trim();
-        const btn = document.getElementById('save-btn');
-        if(!vId) return;
-        btn.disabled = true;
-        try {
-            const resp = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vId}`);
-            const res = await resp.json();
-            const { data: recs } = await _supabase.from('skor_verileri').select('id').order('id', { ascending: false }).limit(1);
-            const wId = recs[0].id;
-            await _supabase.from('skor_verileri').update({ haftanin_notu: note, sarki_adi: res.title, sarki_linki: vId }).eq('id', wId);
-            await _supabase.from('sarki_gecmisi').insert([{ week_id: wId, sarki_adi: res.title, sarki_linki: vId }]);
-            location.reload();
-        } catch(e) { btn.disabled = false; }
-    }
-
-    /* REALTIME XOX v32 */
     async function initXOX() {
         const { data } = await _supabase.from('xox_durumu').select('*').eq('id', 1).single();
         renderXOX(data);
-        _supabase.channel('xox-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'xox_durumu' }, payload => {
-            renderXOX(payload.new);
-        }).subscribe();
+        _supabase.channel('xox-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'xox_durumu' }, payload => { renderXOX(payload.new); }).subscribe();
     }
 
     function renderXOX(data) {
@@ -264,38 +137,86 @@
             cell.className = "xox-cell";
             cell.innerText = val;
             cell.style.color = val === "X" ? "var(--periwinkle)" : "var(--accent)";
-            cell.onclick = () => makeMove(i, board, data.turn);
+            cell.onclick = () => makeMove(i, board, data.turn, data);
             grid.appendChild(cell);
         });
         document.getElementById('xox-status').innerText = `Sıra: ${data.turn}`;
-        document.getElementById('xox-begum-score').innerText = data.begum_wins;
-        document.getElementById('xox-omer-score').innerText = data.omer_wins;
+        document.getElementById('xox-begum-win').innerText = data.begum_wins;
+        document.getElementById('xox-omer-win').innerText = data.omer_wins;
+        document.getElementById('r-begum').innerText = data.begum_round_points;
+        document.getElementById('r-omer').innerText = data.omer_round_points;
     }
 
-    async function makeMove(idx, board, turn) {
+    async function makeMove(idx, board, turn, db) {
         if(board[idx] !== "" || turn !== loggedInUser) return;
-        board[idx] = turn === "Ömer" ? "X" : "O";
-        let win = checkWin(board);
-        let draw = !board.includes("");
-        let nextPlayer = turn === "Ömer" ? "Begüm" : "Ömer";
-        let updates = { board: JSON.stringify(board), turn: nextPlayer };
+        const mark = turn === "Ömer" ? "X" : "O";
+        board[idx] = mark;
         
-        if(win || draw) {
-            if(win) {
-                fireConfetti();
-                if(turn === "Ömer") updates.omer_wins = parseInt(document.getElementById('xox-omer-score').innerText) + 1;
-                else updates.begum_wins = parseInt(document.getElementById('xox-begum-score').innerText) + 1;
-            }
-            updates.board = '["","","","","","","","",""]';
-            setTimeout(async () => { await _supabase.from('xox_durumu').update(updates).eq('id', 1); }, 1500);
+        const newPoints = calculatePoints(board, mark);
+        const isFull = !board.includes("");
+        let updates = { board: JSON.stringify(board), turn: turn === "Ömer" ? "Begüm" : "Ömer" };
+        
+        if(turn === "Ömer") updates.omer_round_points = newPoints;
+        else updates.begum_round_points = newPoints;
+
+        if(isFull) {
+            const bFinal = updates.begum_round_points || db.begum_round_points;
+            const oFinal = updates.omer_round_points || db.omer_round_points;
+            if(oFinal > bFinal) { updates.omer_wins = db.omer_wins + 1; fireConfetti(); }
+            else if(bFinal > oFinal) { updates.begum_wins = db.begum_wins + 1; fireConfetti(); }
+            
+            updates.board = JSON.stringify(Array(36).fill(""));
+            updates.begum_round_points = 0;
+            updates.omer_round_points = 0;
+            updates.turn = "Ömer";
+            setTimeout(async () => { await _supabase.from('xox_durumu').update(updates).eq('id', 1); }, 2000);
         } else {
             await _supabase.from('xox_durumu').update(updates).eq('id', 1);
         }
     }
 
-    function checkWin(b) { const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return w.some(s => b[s[0]]!=="" && b[s[0]]===b[s[1]] && b[s[1]]===b[s[2]]); }
-    function showAdminIfWinner(data) { const last = data[0]; if(loggedInUser === (last.begum_sure > last.omer_sure ? "Begüm" : "Ömer")) { document.getElementById('admin-panel').style.display = 'block'; document.getElementById('new-note').value = last.haftanin_notu || ""; } }
-    function updateMusic(last) { if(last && last.sarki_linki) document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${last.sarki_linki.trim()}?rel=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`; }
+    function calculatePoints(b, mark) {
+        let pts = 0;
+        const size = 6;
+        const check = (x, y, dx, dy) => {
+            for(let i=0; i<3; i++) {
+                let nx = x + i*dx, ny = y + i*dy;
+                if(nx<0 || nx>=size || ny<0 || ny>=size || b[nx*size+ny] !== mark) return false;
+            }
+            return true;
+        };
+        for(let r=0; r<size; r++) {
+            for(let c=0; c<size; c++) {
+                if(check(r, c, 0, 1)) pts++; // Yatay
+                if(check(r, c, 1, 0)) pts++; // Dikey
+                if(check(r, c, 1, 1)) pts++; // Çapraz sağ
+                if(check(r, c, 1, -1)) pts++; // Çapraz sol
+            }
+        }
+        return pts;
+    }
+
+    async function openHistory(weekId) {
+        document.getElementById('history-modal').style.display = 'flex';
+        const { data: week } = await _supabase.from('skor_verileri').select('*').eq('id', weekId).single();
+        const { data: hist } = await _supabase.from('sarki_gecmisi').select('*').eq('week_id', weekId).order('created_at', { ascending: false });
+        const list = document.getElementById('history-list'); list.innerHTML = "";
+        const seen = new Set();
+        if(week.sarki_linki) { seen.add(week.sarki_linki); list.innerHTML += `<div class="history-item"><span>🌟 ${week.sarki_adi}</span></div>`; }
+        hist.forEach(s => { if(!seen.has(s.sarki_linki)) { seen.add(s.sarki_linki); list.innerHTML += `<div class="history-item"><span>${s.sarki_adi}</span></div>`; } });
+    }
+    function closeModal() { document.getElementById('history-modal').style.display = 'none'; }
+    async function updateWeekData() {
+        const n = document.getElementById('new-note').value; const v = document.getElementById('new-song-id').value.trim();
+        if(!v) return;
+        const res = await (await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${v}`)).json();
+        const { data: recs } = await _supabase.from('skor_verileri').select('id').order('id', { ascending: false }).limit(1);
+        await _supabase.from('skor_verileri').update({ haftanin_notu: n, sarki_adi: res.title, sarki_linki: v }).eq('id', recs[0].id);
+        await _supabase.from('sarki_gecmisi').insert([{ week_id: recs[0].id, sarki_adi: res.title, sarki_linki: v }]);
+        location.reload();
+    }
+    function showAdminIfWinner(d) { const l = d[0]; if(loggedInUser === (l.begum_sure > l.omer_sure ? "Begüm" : "Ömer")) { document.getElementById('admin-panel').style.display = 'block'; document.getElementById('new-note').value = l.haftanin_notu || ""; } }
+    function updateMusic(l) { if(l && l.sarki_linki) document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${l.sarki_linki.trim()}?rel=0&modestbranding=1" frameborder="0" allowfullscreen></iframe>`; }
     function toMinutes(v) { if(!v) return 0; const p = v.toString().split('.'); return (parseInt(p[0])*60) + (p[1] ? parseInt(p[1].padEnd(2,'0')) : 0); }
     function formatTime(tm) { return `${Math.floor(tm/60)}s ${tm%60 < 10 ? '0'+(tm%60) : tm%60}dk`; }
     function fireConfetti() { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
