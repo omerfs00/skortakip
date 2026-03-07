@@ -19,17 +19,16 @@
         input { padding: 14px; margin: 8px 0; border: 2px solid var(--border); border-radius: 12px; width: 100%; outline: none; }
         .login-btn { padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
 
-        /* KPSS Bilgi Kartı - Yeni Tasarım */
-        #kpss-box { 
-            background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; 
-            margin: 15px auto; width: 95%; max-width: 550px; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 8px 20px rgba(255, 153, 201, 0.15); display: none; text-align: center;
-        }
-        #kpss-box:active { transform: scale(0.97); }
-        #kpss-content { font-size: 0.9rem; font-weight: 600; line-height: 1.5; color: #86198F; }
+        #kpss-box { background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; margin: 15px auto; width: 95%; max-width: 550px; cursor: pointer; text-align: center; display: none; }
+        #kpss-content { font-size: 0.9rem; font-weight: 600; color: #86198F; }
 
-        .container { background: var(--card-bg); padding: 25px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.05); width: 100%; max-width: 550px; display: none; margin: 0 auto 180px auto; border: 1px solid var(--border); text-align: center; }
-        .total-card { background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 25px; display: flex; justify-content: space-around; border: 2px solid var(--accent); }
+        .container { background: var(--card-bg); padding: 25px; border-radius: 30px; width: 100%; max-width: 550px; display: none; margin: 0 auto 20px auto; border: 1px solid var(--border); text-align: center; }
+        
+        .progress-container { width: 100%; height: 12px; background: #eee; border-radius: 10px; margin: 15px 0; overflow: hidden; display: flex; }
+        #bar-begum { height: 100%; background: var(--accent); transition: 0.5s; }
+        #bar-omer { height: 100%; background: var(--periwinkle); transition: 0.5s; }
+
+        .total-card { background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 5px; display: flex; justify-content: space-around; border: 2px solid var(--accent); }
         .total-val { font-size: 1.1rem; font-weight: 800; }
 
         .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 20px; }
@@ -41,42 +40,30 @@
         .winner-text { font-weight: 800; color: #1e293b; }
         .record-holder { font-weight: 900; border-bottom: 4px solid var(--record) !important; color: #8B8000 !important; }
         
-        /* Tooltip (Konuşma Balonu) Stili - GÜNCELLENDİ */
         .speech-bubble { 
-            visibility: hidden; 
-            background: var(--text-main); 
-            color: #fff; 
-            border-radius: 8px; 
-            padding: 10px; 
-            position: absolute; 
-            z-index: 1000; 
-            bottom: 115%; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            opacity: 0; 
-            transition: 0.3s; 
-            min-width: 140px; 
-            max-width: 200px; 
-            width: max-content;
-            font-size: 0.75rem; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-            pointer-events: none; 
-            white-space: normal; 
-            word-wrap: break-word; 
+            visibility: hidden; background: var(--text-main); color: #fff; border-radius: 8px; padding: 10px; 
+            position: absolute; z-index: 1000; bottom: 120%; left: 50%; transform: translateX(-50%); 
+            opacity: 0; transition: 0.3s; min-width: 140px; max-width: 220px; width: max-content;
+            font-size: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); white-space: normal; word-wrap: break-word; pointer-events: none;
         }
         .winner-cell:hover .speech-bubble { visibility: visible; opacity: 1; }
+        tr:first-child .speech-bubble { bottom: auto; top: 120%; }
 
-        /* En üst satırda notun yukarıda kaybolmasını önlemek için balonun aşağıda gösterilmesini sağlar */
-        tr:first-child .speech-bubble {
-            bottom: auto;
-            top: 115%;
-        }
+        #xox-section { background: white; border-radius: 30px; padding: 25px; margin: 20px auto 180px auto; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; display: none; }
+        .xox-scores { display: flex; justify-content: space-around; margin-bottom: 15px; font-weight: 800; font-size: 1.1rem; }
+        .xox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 220px; margin: 0 auto; }
+        .xox-cell { background: #FFF5F9; border: 2px solid var(--border); height: 65px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 900; border-radius: 15px; cursor: pointer; transition: 0.2s; }
 
-        #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); margin-bottom: 80px; text-align: left; }
-        .admin-input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--border); }
+        #history-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 400px; max-height: 70vh; overflow-y: auto; text-align: center; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; font-weight: 600; }
+        .delete-btn { color: #ff4d4d; cursor: pointer; font-size: 1.2rem; padding: 5px; }
 
-        .music-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 2px solid var(--border); padding: 8px 0; display: none; justify-content: center; z-index: 999; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
-        #youtube-container { width: 95%; max-width: 450px; height: 90px; border-radius: 10px; overflow: hidden; background: #000; }
+        #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); text-align: left; }
+        .admin-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); }
+
+        .music-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 2px solid var(--border); padding: 8px 0; display: none; justify-content: center; z-index: 999; }
+        #youtube-container { width: 95%; max-width: 450px; height: 90px; border-radius: 12px; overflow: hidden; background: #000; }
     </style>
 </head>
 <body>
@@ -84,7 +71,7 @@
 <div id="login-screen">
     <div class="login-card">
         <h2>🔒 Giriş</h2>
-        <input type="text" id="user" placeholder="İsim (Begüm / Ömer)">
+        <input type="text" id="user" placeholder="Begüm / Ömer">
         <input type="password" id="pass" placeholder="Şifre">
         <button class="login-btn" onclick="checkLogin()">Giriş Yap</button>
     </div>
@@ -95,169 +82,228 @@
 </div>
 
 <div class="container" id="main-site">
-    <h2 style="color:var(--accent); margin-bottom: 20px;">Haftalık Durum</h2>
-    
     <div class="total-card">
         <div>Begüm <br><span id="total-begum" class="total-val" style="color:var(--accent)">--:--</span></div>
         <div style="width: 1px; background: var(--border);"></div>
         <div>Ömer <br><span id="total-omer" class="total-val" style="color:var(--periwinkle)">--:--</span></div>
     </div>
+    <div class="progress-container"><div id="bar-begum"></div><div id="bar-omer"></div></div>
 
     <div class="table-wrapper">
         <table>
-            <thead>
-                <tr><th>Hafta</th><th>Begüm</th><th>Ömer</th><th>🎵 Şarkı</th></tr>
-            </thead>
+            <thead><tr><th>Hafta</th><th>Begüm</th><th>Ömer</th><th>🎵 Şarkı</th></tr></thead>
             <tbody id="table-body"></tbody>
         </table>
     </div>
 
     <div id="admin-panel">
-        <h4 style="margin:0 0 10px 0">🛠️ Güncelleme</h4>
-        <input type="text" id="new-note" class="admin-input" placeholder="Bu haftanın notu..">
+        <h4 style="margin:0 0 5px 0">🛠️ Haftayı Güncelle</h4>
+        <input type="text" id="new-note" class="admin-input">
         <input type="text" id="new-song-id" class="admin-input" placeholder="YouTube Video ID">
-        <button id="save-btn" class="login-btn" onclick="updateWeekData()" style="margin-top:10px">Kaydet</button>
+        <button id="save-btn" class="login-btn" onclick="updateWeekData()">Kaydet</button>
     </div>
 </div>
 
-<div class="music-bar" id="music-player">
-    <div id="youtube-container"></div>
+<div id="xox-section">
+    <div class="xox-scores">
+        <div style="color: var(--accent);">Begüm: <span id="xox-begum-score">0</span></div>
+        <div style="color: var(--periwinkle);">Ömer: <span id="xox-omer-score">0</span></div>
+    </div>
+    <p id="xox-status" style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Sıra bekleniyor...</p>
+    <div class="xox-grid" id="xox-grid"></div>
 </div>
 
+<div id="history-modal"><div class="modal-content"><h3 style="margin-top:0">🎵 Şarkı Arşivi</h3><div id="history-list"></div><button class="login-btn" onclick="closeModal()" style="margin-top:15px">Kapat</button></div></div>
+
+<div class="music-bar" id="music-player"><div id="youtube-container"></div></div>
+
 <script>
-    const kpssData = [
-        "Yeni Zigana Tüneli: 14,5 km ile Türkiye ve Avrupa'nın en uzun çift tüplü tüneli.",
-        "Yusufeli Barajı: Çoruh Nehri üzerinde, Türkiye'nin en yüksek barajı.",
-        "En Son İl: Düzce (Türkiye'nin 81. ili).",
-        "İlk Milli Park: Yozgat Çamlığı.",
-        "UNESCO 2023: Gordion Antik Kenti (Ankara), listeye giren 20. varlığımız.",
-        "İlk Kadın Vali: Lale Aytaman (Muğla).",
-        "İlk Kadın Başbakan: Tansu Çiller.",
-        "En Yüksek Dağ: Ağrı Dağı (5137 m).",
-        "En Kalabalık Şehir: İstanbul.",
-        "İlk Yazılı Anayasa: Kanun-i Esasi (1876).",
-        "Sinekli Bakkal: Halide Edip Adıvar'ın en ünlü eseri.",
-        "Milletvekili Sayısı: TBMM'de 600 milletvekili bulunur.",
-        "Anayasa Mahkemesi: 15 üyeden oluşur.",
-        "Sabiha Gökçen: Dünyanın ilk kadın savaş pilotu.",
-        "Mimar Sinan: Süleymaniye Camii onun 'Kalfalık' eseridir.",
-        "Safranbolu: Türkiye'nin son dahil edilen Sakin Şehirlerinden (Cittaslow) biridir.",
-        "UNESCO 2024: Anadolu'nun Ortaçağ Dönemi Ahşap Hipostil Camileri listeye eklenen 21. varlığımızdır.",
-        "Nutuk: Atatürk'ün bu eseri 1919 ile 1927 yılları arasındaki süreci anlatır.",
-        "Milletvekili Seçilme Yaşı: 2017 değişikliği ile 18 yaşını dolduran her Türk vatandaşı seçilebilir.",
-        "HSK: Hakimler ve Savcılar Kurulu toplam 13 üyeden oluşmaktadır.",
-        "Kadeş Antlaşması: Hititler ve Mısır arasında imzalanan tarihin ilk yazılı antlaşmasıdır.",
-        "Yusufeli Barajı: Artvin'de bulunan, Türkiye'nin en yüksek barajıdır.",
-        "Mimar Sinan: Edirne'deki Selimiye Camii için 'Ustalık Eserim' demiştir.",
-        "İstiklal Marşı: İlk kez 1921 Anayasası'nda yer almış, Sebilürreşad dergisinde yayımlanmıştır.",
-        "Anayasa Mahkemesi: 15 üyeden oluşur ve üyeleri 12 yıl için seçilir.",
-        "Sabiha Gökçen: Dünyanın ilk kadın savaş pilotudur.",
-        "Gül Esin: Türkiye'nin ilk kadın muhtarıdır (Aydın - Çine).",
-        "Gordion Antik Kenti: Ankara'da bulunan ve UNESCO listesine giren 20. varlığımızdır.",
-        "En Uzun Sınırımız: Suriye sınırı, en kısa sınırımız ise Nahçıvan (Azerbaycan) sınırıdır.",
-        "Cumhurbaşkanlığı Kararnamesi: İlk kez 1982 Anayasası ile hukuk sistemimize girmiştir."
-    ];
+    const kpssData = ["Yeni Zigana Tüneli: 14,5 km ile Türkiye'nin en uzun tüneli.", "Yusufeli Barajı: Türkiye'nin en yüksek barajı.", "Milletvekili Sayısı: TBMM'de 600 vekil bulunur.", "Gordion Antik Kenti: UNESCO listesine giren 20. varlığımız."];
     let currentFactIndex = 0;
-
-    function showNextFact() {
-        currentFactIndex = (currentFactIndex + 1) % kpssData.length;
-        document.getElementById('kpss-content').innerText = kpssData[currentFactIndex];
-    }
-    setInterval(showNextFact, 15000);
-
     const SB_URL = "https://yczoplqskmrolpbdbsnp.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inljem9wbHFza21yb2xwYmRic25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDQ3ODAsImV4cCI6MjA4NjU4MDc4MH0.hmEnEHugyTU6gLkFHJ9qsMVKETWCI6YN24SShfol6sc";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
     let loggedInUser = "";
+
+    function showNextFact() { currentFactIndex = (currentFactIndex + 1) % kpssData.length; document.getElementById('kpss-content').innerText = kpssData[currentFactIndex]; }
+    setInterval(showNextFact, 15000);
 
     async function checkLogin() {
         const u = document.getElementById('user').value.trim();
         const p = document.getElementById('pass').value.trim();
         if((u === "Begüm" || u === "Ömer") && p === "1923#") {
             loggedInUser = u;
-            try { await _supabase.from('login_logs').insert([{ user_name: u }]); } catch (err) {}
+            try { await _supabase.from('login_logs').insert([{ user_name: u }]); } catch (e) {}
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-site').style.display = 'block';
             document.getElementById('music-player').style.display = 'flex';
             document.getElementById('kpss-box').style.display = 'block';
-            document.getElementById('kpss-content').innerText = kpssData[0];
-            fetchData();
-        } else { alert("Giriş başarısız!"); }
+            document.getElementById('xox-section').style.display = 'block';
+            fetchData(); initXOX();
+        } else { alert("Hata!"); }
     }
 
     async function fetchData() {
         const { data } = await _supabase.from('skor_verileri').select('*').order('id', { ascending: false });
-        if (data) { renderTable(data); showAdminIfWinner(data); }
+        if (data) { renderTable(data); updateProgressBar(data); showAdminIfWinner(data); }
+    }
+
+    function updateProgressBar(data) {
+        let tO = 0, tB = 0;
+        data.forEach(d => { tO += toMinutes(d.omer_sure); tB += toMinutes(d.begum_sure); });
+        const total = tO + tB;
+        if(total > 0) {
+            document.getElementById('bar-begum').style.width = (tB / total * 100) + "%";
+            document.getElementById('bar-omer').style.width = (tO / total * 100) + "%";
+        }
     }
 
     function renderTable(data) {
         const tbody = document.getElementById('table-body');
-        tbody.innerHTML = ""; let tOmer = 0, tBegum = 0;
+        tbody.innerHTML = ""; let tO = 0, tB = 0;
         let allTimes = [];
-        data.forEach(d => {
-            if(d.omer_sure) allTimes.push(toMinutes(d.omer_sure));
-            if(d.begum_sure) allTimes.push(toMinutes(d.begum_sure));
-        });
-        const bestTime = Math.max(...allTimes);
+        data.forEach(d => { if(d.omer_sure) allTimes.push(toMinutes(d.omer_sure)); if(d.begum_sure) allTimes.push(toMinutes(d.begum_sure)); });
+        const best = Math.max(...allTimes);
 
         data.forEach(d => {
             const mO = toMinutes(d.omer_sure); const mB = toMinutes(d.begum_sure);
-            tOmer += mO; tBegum += mB;
+            tO += mO; tB += mB;
             const bWin = mB > mO;
-            const bIsRecord = mB === bestTime && mB > 0;
-            const oIsRecord = mO === bestTime && mO > 0;
-
             tbody.innerHTML += `
                 <tr>
                     <td>${d.hafta}</td>
-                    <td class="winner-cell ${bWin ? 'winner-text win-border' : ''} ${bIsRecord ? 'record-holder' : ''}" onclick="${bWin ? 'fireConfetti()' : ''}">
-                        ${d.begum_sure} ${bWin ? '👑' : ''} ${bIsRecord ? '🔥' : ''}
-                        ${bWin ? `<span class="speech-bubble">${d.haftanin_notu || '...'}</span>` : ''}
+                    <td class="winner-cell ${bWin?'winner-text win-border':''} ${mB===best?'record-holder':''}" onclick="${bWin?'fireConfetti()':''}">
+                        ${d.begum_sure}${bWin?'👑':''}${mB===best?'🔥':''}
+                        <span class="speech-bubble">${d.haftanin_notu || '...'}</span>
                     </td>
-                    <td class="winner-cell ${!bWin ? 'winner-text win-border' : ''} ${oIsRecord ? 'record-holder' : ''}" onclick="${!bWin ? 'fireConfetti()' : ''}">
-                        ${d.omer_sure} ${!bWin ? '👑' : ''} ${oIsRecord ? '🔥' : ''}
-                        ${!bWin ? `<span class="speech-bubble">${d.haftanin_notu || '...'}</span>` : ''}
+                    <td class="winner-cell ${!bWin?'winner-text win-border':''} ${mO===best?'record-holder':''}" onclick="${!bWin?'fireConfetti()':''}">
+                        ${d.omer_sure}${!bWin?'👑':''}${mO===best?'🔥':''}
+                        <span class="speech-bubble">${d.haftanin_notu || '...'}</span>
                     </td>
-                    <td style="font-size: 0.7rem; color: #64748b;">${d.sarki_adi || '-'}</td>
+                    <td style="font-size: 0.7rem; color: #64748b;">
+                        ${d.sarki_adi || '-'}<br>
+                        <span onclick="openHistory(${d.id})" style="cursor:pointer; font-size:1.1rem;">📜</span>
+                    </td>
                 </tr>`;
         });
-        document.getElementById('total-begum').innerText = formatTime(tBegum);
-        document.getElementById('total-omer').innerText = formatTime(tOmer);
-        updateMusic(data[0]); 
+        document.getElementById('total-begum').innerText = formatTime(tB);
+        document.getElementById('total-omer').innerText = formatTime(tO);
+        updateMusic(data[0]);
     }
+
+    // SYNC FIX: Tablodaki mevcut şarkıyı her zaman listenin en başına koyar
+    async function openHistory(weekId) {
+        document.getElementById('history-modal').style.display = 'flex';
+        
+        // 1. Haftanın mevcut (tablodaki) şarkısını çek
+        const { data: weekData } = await _supabase.from('skor_verileri').select('*').eq('id', weekId).single();
+        const currentWinner = weekData.begum_sure > weekData.omer_sure ? "Begüm" : "Ömer";
+
+        // 2. Arşiv tablosundaki geçmişi çek
+        const { data: historyData } = await _supabase.from('sarki_gecmisi').select('*').eq('week_id', weekId).order('created_at', { ascending: false });
+        
+        const list = document.getElementById('history-list');
+        list.innerHTML = "";
+        
+        const seenLinks = new Set();
+        const canDelete = loggedInUser === currentWinner;
+
+        // ÖNCE: Tabloda o an yazılı olan şarkıyı ekle (En üstte olması için)
+        if (weekData.sarki_linki) {
+            seenLinks.add(weekData.sarki_linki);
+            list.innerHTML += `<div class="history-item" style="background: #FFF5F9; border-radius: 8px;">
+                <span>🌟 ${weekData.sarki_adi} (Aktif)</span>
+                ${canDelete ? `<span class="delete-btn" title="Ana şarkı tablodan güncellenmelidir" style="opacity:0.3; cursor:not-allowed">🗑️</span>` : ''}
+            </div>`;
+        }
+
+        // SONRA: Diğer arşiv şarkılarını ekle (Tekrar etmeden)
+        historyData.forEach(s => {
+            if (!seenLinks.has(s.sarki_linki)) {
+                seenLinks.add(s.sarki_linki);
+                list.innerHTML += `<div class="history-item">
+                    <span>${s.sarki_adi}</span>
+                    ${canDelete ? `<span class="delete-btn" onclick="deleteSong(${s.id}, ${weekId})">🗑️</span>` : ''}
+                </div>`;
+            }
+        });
+
+        if(list.innerHTML === "") list.innerHTML = "<p style='color:gray'>Henüz arşiv boş.</p>";
+    }
+
+    async function deleteSong(id, weekId) { if(confirm("Silinsin mi?")) { await _supabase.from('sarki_gecmisi').delete().eq('id', id); openHistory(weekId); }}
+    function closeModal() { document.getElementById('history-modal').style.display = 'none'; }
 
     async function updateWeekData() {
         const note = document.getElementById('new-note').value;
         const vId = document.getElementById('new-song-id').value.trim();
         const btn = document.getElementById('save-btn');
-        if (!vId) return;
-        btn.disabled = true; btn.innerText = "Yükleniyor...";
+        if(!vId) return;
+        btn.disabled = true;
         try {
             const resp = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vId}`);
             const res = await resp.json();
-            const { data: records } = await _supabase.from('skor_verileri').select('id').order('id', { ascending: false }).limit(1);
-            await _supabase.from('skor_verileri').update({ 
-                haftanin_notu: note, sarki_adi: res.title || "Şarkı", sarki_linki: vId 
-            }).eq('id', records[0].id);
+            const { data: recs } = await _supabase.from('skor_verileri').select('id').order('id', { ascending: false }).limit(1);
+            const wId = recs[0].id;
+            await _supabase.from('skor_verileri').update({ haftanin_notu: note, sarki_adi: res.title, sarki_linki: vId }).eq('id', wId);
+            await _supabase.from('sarki_gecmisi').insert([{ week_id: wId, sarki_adi: res.title, sarki_linki: vId }]);
             location.reload();
-        } catch (e) { alert("Hata!"); } finally { btn.disabled = false; btn.innerText = "Kaydet"; }
+        } catch(e) { btn.disabled = false; }
     }
 
-    function updateMusic(last) {
-        if(last && last.sarki_linki) {
-            document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${last.sarki_linki.trim()}?rel=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+    async function initXOX() {
+        const { data } = await _supabase.from('xox_durumu').select('*').eq('id', 1).single();
+        const board = JSON.parse(data.board);
+        const grid = document.getElementById('xox-grid');
+        grid.innerHTML = "";
+        board.forEach((val, i) => {
+            const cell = document.createElement('div');
+            cell.className = "xox-cell";
+            cell.innerText = val;
+            cell.style.color = val === "X" ? "var(--periwinkle)" : "var(--accent)";
+            cell.onclick = () => makeMove(i, board, data.turn);
+            grid.appendChild(cell);
+        });
+        document.getElementById('xox-status').innerText = `Sıra: ${data.turn}`;
+        document.getElementById('xox-begum-score').innerText = data.begum_wins;
+        document.getElementById('xox-omer-score').innerText = data.omer_wins;
+    }
+
+    async function makeMove(idx, board, turn) {
+        if(board[idx] !== "" || turn !== loggedInUser) return;
+        board[idx] = turn === "Ömer" ? "X" : "O";
+        let win = checkWin(board);
+        let draw = !board.includes("");
+        let updates = { board: JSON.stringify(board), turn: turn === "Ömer" ? "Begüm" : "Ömer" };
+        
+        if(win || draw) {
+            if(win) {
+                fireConfetti();
+                turn === "Ömer" ? updates.omer_wins = parseInt(document.getElementById('xox-omer-score').innerText) + 1 
+                                : updates.begum_wins = parseInt(document.getElementById('xox-begum-score').innerText) + 1;
+            }
+            updates.board = '["","","","","","","","",""]';
+            updates.turn = "Ömer";
+            setTimeout(async () => { await _supabase.from('xox_durumu').update(updates).eq('id', 1); initXOX(); }, 1500);
+        } else {
+            await _supabase.from('xox_durumu').update(updates).eq('id', 1);
+            initXOX();
         }
     }
 
-    function showAdminIfWinner(data) {
-        const last = data[0]; 
-        const winner = last.begum_sure > last.omer_sure ? "Begüm" : "Ömer";
-        if(loggedInUser === winner) { document.getElementById('admin-panel').style.display = 'block'; }
-    }
+    function checkWin(b) { const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return w.some(s => b[s[0]]!=="" && b[s[0]]===b[s[1]] && b[s[1]]===b[s[2]]); }
 
+    function showAdminIfWinner(data) {
+        const last = data[0];
+        if(loggedInUser === (last.begum_sure > last.omer_sure ? "Begüm" : "Ömer")) { 
+            document.getElementById('admin-panel').style.display = 'block'; 
+            document.getElementById('new-note').value = last.haftanin_notu || "";
+        }
+    }
+    function updateMusic(last) { if(last && last.sarki_linki) document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${last.sarki_linki.trim()}?rel=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`; }
     function toMinutes(v) { if(!v) return 0; const p = v.toString().split('.'); return (parseInt(p[0])*60) + (p[1] ? parseInt(p[1].padEnd(2,'0')) : 0); }
     function formatTime(tm) { return `${Math.floor(tm/60)}s ${tm%60 < 10 ? '0'+(tm%60) : tm%60}dk`; }
-    function fireConfetti() { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#FF99C9', '#58FCEC'] }); }
+    function fireConfetti() { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
 </script>
 </body>
 </html>
