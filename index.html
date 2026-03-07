@@ -14,23 +14,28 @@
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; min-height: 100vh; }
         
+        /* Login */
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 85vh; width: 100%; }
         .login-card { background: var(--card-bg); padding: 30px; border-radius: 24px; text-align: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 95%; max-width: 350px; }
         input { padding: 14px; margin: 8px 0; border: 2px solid var(--border); border-radius: 12px; width: 100%; outline: none; }
         .login-btn { padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
 
+        /* KPSS Bilgi Kartı */
         #kpss-box { background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; margin: 15px auto; width: 95%; max-width: 550px; cursor: pointer; text-align: center; display: none; }
-        #kpss-content { font-size: 0.9rem; font-weight: 600; color: #86198F; }
+        #kpss-content { font-size: 0.9rem; font-weight: 600; line-height: 1.5; color: #86198F; }
 
+        /* Ana Konteyner */
         .container { background: var(--card-bg); padding: 25px; border-radius: 30px; width: 100%; max-width: 550px; display: none; margin: 0 auto 20px auto; border: 1px solid var(--border); text-align: center; }
         
+        /* Skor Barı */
         .progress-container { width: 100%; height: 12px; background: #eee; border-radius: 10px; margin: 15px 0; overflow: hidden; display: flex; }
-        #bar-begum { height: 100%; background: var(--accent); transition: 0.5s; }
-        #bar-omer { height: 100%; background: var(--periwinkle); transition: 0.5s; }
+        #bar-begum { height: 100%; background: var(--accent); transition: 0.5s; width: 50%; }
+        #bar-omer { height: 100%; background: var(--periwinkle); transition: 0.5s; width: 50%; }
 
         .total-card { background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 5px; display: flex; justify-content: space-around; border: 2px solid var(--accent); }
         .total-val { font-size: 1.1rem; font-weight: 800; }
 
+        /* Tablo */
         .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; min-width: 350px; }
         th, td { padding: 12px 5px; text-align: center; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
@@ -40,6 +45,7 @@
         .winner-text { font-weight: 800; color: #1e293b; }
         .record-holder { font-weight: 900; border-bottom: 4px solid var(--record) !important; color: #8B8000 !important; }
         
+        /* Tooltip (Konuşma Balonu) */
         .speech-bubble { 
             visibility: hidden; background: var(--text-main); color: #fff; border-radius: 8px; padding: 10px; 
             position: absolute; z-index: 1000; bottom: 120%; left: 50%; transform: translateX(-50%); 
@@ -49,20 +55,25 @@
         .winner-cell:hover .speech-bubble { visibility: visible; opacity: 1; }
         tr:first-child .speech-bubble { bottom: auto; top: 120%; }
 
+        /* XOX Bölümü */
         #xox-section { background: white; border-radius: 30px; padding: 25px; margin: 20px auto 180px auto; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; display: none; }
         .xox-scores { display: flex; justify-content: space-around; margin-bottom: 15px; font-weight: 800; font-size: 1.1rem; }
         .xox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 220px; margin: 0 auto; }
         .xox-cell { background: #FFF5F9; border: 2px solid var(--border); height: 65px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 900; border-radius: 15px; cursor: pointer; transition: 0.2s; }
+        .xox-cell:hover { background: #fdf2f8; transform: scale(1.02); }
 
+        /* Arşiv Modalı */
         #history-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 400px; max-height: 70vh; overflow-y: auto; text-align: center; }
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; font-weight: 600; }
         .delete-btn { color: #ff4d4d; cursor: pointer; font-size: 1.2rem; padding: 5px; }
 
+        /* Admin Paneli */
         #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); text-align: left; }
         .admin-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); }
 
-        .music-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 2px solid var(--border); padding: 8px 0; display: none; justify-content: center; z-index: 999; }
+        /* Müzik Barı */
+        .music-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 2px solid var(--border); padding: 8px 0; display: none; justify-content: center; z-index: 999; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
         #youtube-container { width: 95%; max-width: 450px; height: 90px; border-radius: 12px; overflow: hidden; background: #000; }
     </style>
 </head>
@@ -71,7 +82,7 @@
 <div id="login-screen">
     <div class="login-card">
         <h2>🔒 Giriş</h2>
-        <input type="text" id="user" placeholder="Begüm / Ömer">
+        <input type="text" id="user" placeholder="İsim (Begüm / Ömer)">
         <input type="password" id="pass" placeholder="Şifre">
         <button class="login-btn" onclick="checkLogin()">Giriş Yap</button>
     </div>
@@ -98,7 +109,7 @@
 
     <div id="admin-panel">
         <h4 style="margin:0 0 5px 0">🛠️ Haftayı Güncelle</h4>
-        <input type="text" id="new-note" class="admin-input">
+        <input type="text" id="new-note" class="admin-input" placeholder="Bu haftanın mesajı..">
         <input type="text" id="new-song-id" class="admin-input" placeholder="YouTube Video ID">
         <button id="save-btn" class="login-btn" onclick="updateWeekData()">Kaydet</button>
     </div>
@@ -109,7 +120,7 @@
         <div style="color: var(--accent);">Begüm: <span id="xox-begum-score">0</span></div>
         <div style="color: var(--periwinkle);">Ömer: <span id="xox-omer-score">0</span></div>
     </div>
-    <p id="xox-status" style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Sıra bekleniyor...</p>
+    <p id="xox-status" style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Bağlanıyor...</p>
     <div class="xox-grid" id="xox-grid"></div>
 </div>
 
@@ -118,7 +129,7 @@
 <div class="music-bar" id="music-player"><div id="youtube-container"></div></div>
 
 <script>
-    const kpssData = ["Yeni Zigana Tüneli: 14,5 km ile Türkiye'nin en uzun tüneli.", "Yusufeli Barajı: Türkiye'nin en yüksek barajı.", "Milletvekili Sayısı: TBMM'de 600 vekil bulunur.", "Gordion Antik Kenti: UNESCO listesine giren 20. varlığımız."];
+    const kpssData = ["Yeni Zigana Tüneli: 14,5 km ile Türkiye'nin en uzun tüneli.", "Yusufeli Barajı: Türkiye'nin en yüksek barajı.", "Gordion Antik Kenti: UNESCO listesine giren 20. varlığımız.", "Sabiha Gökçen: Dünyanın ilk kadın savaş pilotu."];
     let currentFactIndex = 0;
     const SB_URL = "https://yczoplqskmrolpbdbsnp.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inljem9wbHFza21yb2xwYmRic25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDQ3ODAsImV4cCI6MjA4NjU4MDc4MH0.hmEnEHugyTU6gLkFHJ9qsMVKETWCI6YN24SShfol6sc";
@@ -191,43 +202,27 @@
         updateMusic(data[0]);
     }
 
-    // SYNC FIX: Tablodaki mevcut şarkıyı her zaman listenin en başına koyar
     async function openHistory(weekId) {
         document.getElementById('history-modal').style.display = 'flex';
-        
-        // 1. Haftanın mevcut (tablodaki) şarkısını çek
         const { data: weekData } = await _supabase.from('skor_verileri').select('*').eq('id', weekId).single();
         const currentWinner = weekData.begum_sure > weekData.omer_sure ? "Begüm" : "Ömer";
-
-        // 2. Arşiv tablosundaki geçmişi çek
         const { data: historyData } = await _supabase.from('sarki_gecmisi').select('*').eq('week_id', weekId).order('created_at', { ascending: false });
-        
         const list = document.getElementById('history-list');
         list.innerHTML = "";
-        
         const seenLinks = new Set();
         const canDelete = loggedInUser === currentWinner;
-
-        // ÖNCE: Tabloda o an yazılı olan şarkıyı ekle (En üstte olması için)
+        
         if (weekData.sarki_linki) {
             seenLinks.add(weekData.sarki_linki);
-            list.innerHTML += `<div class="history-item" style="background: #FFF5F9; border-radius: 8px;">
-                <span>🌟 ${weekData.sarki_adi} (Aktif)</span>
-                ${canDelete ? `<span class="delete-btn" title="Ana şarkı tablodan güncellenmelidir" style="opacity:0.3; cursor:not-allowed">🗑️</span>` : ''}
-            </div>`;
+            list.innerHTML += `<div class="history-item" style="background: #FFF5F9; border-radius: 8px;"><span>🌟 ${weekData.sarki_adi} (Aktif)</span>${canDelete ? `<span class="delete-btn" title="Aktif şarkı silinemez" style="opacity:0.3; cursor:not-allowed">🗑️</span>` : ''}</div>`;
         }
-
-        // SONRA: Diğer arşiv şarkılarını ekle (Tekrar etmeden)
+        
         historyData.forEach(s => {
             if (!seenLinks.has(s.sarki_linki)) {
                 seenLinks.add(s.sarki_linki);
-                list.innerHTML += `<div class="history-item">
-                    <span>${s.sarki_adi}</span>
-                    ${canDelete ? `<span class="delete-btn" onclick="deleteSong(${s.id}, ${weekId})">🗑️</span>` : ''}
-                </div>`;
+                list.innerHTML += `<div class="history-item"><span>${s.sarki_adi}</span>${canDelete ? `<span class="delete-btn" onclick="deleteSong(${s.id}, ${weekId})">🗑️</span>` : ''}</div>`;
             }
         });
-
         if(list.innerHTML === "") list.innerHTML = "<p style='color:gray'>Henüz arşiv boş.</p>";
     }
 
@@ -251,8 +246,16 @@
         } catch(e) { btn.disabled = false; }
     }
 
+    /* REALTIME XOX v32 */
     async function initXOX() {
         const { data } = await _supabase.from('xox_durumu').select('*').eq('id', 1).single();
+        renderXOX(data);
+        _supabase.channel('xox-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'xox_durumu' }, payload => {
+            renderXOX(payload.new);
+        }).subscribe();
+    }
+
+    function renderXOX(data) {
         const board = JSON.parse(data.board);
         const grid = document.getElementById('xox-grid');
         grid.innerHTML = "";
@@ -274,32 +277,24 @@
         board[idx] = turn === "Ömer" ? "X" : "O";
         let win = checkWin(board);
         let draw = !board.includes("");
-        let updates = { board: JSON.stringify(board), turn: turn === "Ömer" ? "Begüm" : "Ömer" };
+        let nextPlayer = turn === "Ömer" ? "Begüm" : "Ömer";
+        let updates = { board: JSON.stringify(board), turn: nextPlayer };
         
         if(win || draw) {
             if(win) {
                 fireConfetti();
-                turn === "Ömer" ? updates.omer_wins = parseInt(document.getElementById('xox-omer-score').innerText) + 1 
-                                : updates.begum_wins = parseInt(document.getElementById('xox-begum-score').innerText) + 1;
+                if(turn === "Ömer") updates.omer_wins = parseInt(document.getElementById('xox-omer-score').innerText) + 1;
+                else updates.begum_wins = parseInt(document.getElementById('xox-begum-score').innerText) + 1;
             }
             updates.board = '["","","","","","","","",""]';
-            updates.turn = "Ömer";
-            setTimeout(async () => { await _supabase.from('xox_durumu').update(updates).eq('id', 1); initXOX(); }, 1500);
+            setTimeout(async () => { await _supabase.from('xox_durumu').update(updates).eq('id', 1); }, 1500);
         } else {
             await _supabase.from('xox_durumu').update(updates).eq('id', 1);
-            initXOX();
         }
     }
 
     function checkWin(b) { const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return w.some(s => b[s[0]]!=="" && b[s[0]]===b[s[1]] && b[s[1]]===b[s[2]]); }
-
-    function showAdminIfWinner(data) {
-        const last = data[0];
-        if(loggedInUser === (last.begum_sure > last.omer_sure ? "Begüm" : "Ömer")) { 
-            document.getElementById('admin-panel').style.display = 'block'; 
-            document.getElementById('new-note').value = last.haftanin_notu || "";
-        }
-    }
+    function showAdminIfWinner(data) { const last = data[0]; if(loggedInUser === (last.begum_sure > last.omer_sure ? "Begüm" : "Ömer")) { document.getElementById('admin-panel').style.display = 'block'; document.getElementById('new-note').value = last.haftanin_notu || ""; } }
     function updateMusic(last) { if(last && last.sarki_linki) document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${last.sarki_linki.trim()}?rel=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`; }
     function toMinutes(v) { if(!v) return 0; const p = v.toString().split('.'); return (parseInt(p[0])*60) + (p[1] ? parseInt(p[1].padEnd(2,'0')) : 0); }
     function formatTime(tm) { return `${Math.floor(tm/60)}s ${tm%60 < 10 ? '0'+(tm%60) : tm%60}dk`; }
