@@ -15,11 +15,13 @@
         input { padding: 14px; margin: 8px 0; border: 2px solid var(--border); border-radius: 12px; width: 100%; outline: none; }
         .login-btn { padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
         #kpss-box { background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; margin: 15px auto; width: 95%; max-width: 550px; cursor: pointer; text-align: center; display: none; }
+        #kpss-content { font-size: 0.9rem; font-weight: 600; line-height: 1.5; color: #86198F; }
         .container { background: var(--card-bg); padding: 25px; border-radius: 30px; width: 100%; max-width: 550px; display: none; margin: 0 auto 20px auto; border: 1px solid var(--border); text-align: center; }
         .progress-container { width: 100%; height: 12px; background: #eee; border-radius: 10px; margin: 15px 0; overflow: hidden; display: flex; }
         #bar-begum { height: 100%; background: var(--accent); transition: 0.5s; }
         #bar-omer { height: 100%; background: var(--periwinkle); transition: 0.5s; }
         .total-card { background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 5px; display: flex; justify-content: space-around; border: 2px solid var(--accent); }
+        .total-val { font-size: 1.1rem; font-weight: 800; }
         .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; min-width: 350px; }
         th, td { padding: 12px 5px; text-align: center; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
@@ -32,15 +34,18 @@
         tr:first-child .speech-bubble { bottom: auto; top: 120%; }
 
         /* XOX 6x6 CSS */
-        #xox-section { background: white; border-radius: 30px; padding: 20px; margin: 20px auto 180px auto; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; display: none; }
-        .xox-scores { display: flex; justify-content: space-around; margin-bottom: 5px; font-weight: 800; }
+        #xox-section { background: white; border-radius: 30px; padding: 25px; margin: 20px auto 180px auto; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; display: none; }
+        .xox-scores { display: flex; justify-content: space-around; margin-bottom: 5px; font-weight: 800; font-size: 1.1rem; }
         .round-puan { font-size: 0.8rem; color: #64748b; margin-bottom: 10px; }
         .xox-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; width: 300px; margin: 0 auto; }
         .xox-cell { background: #FFF5F9; border: 1px solid var(--border); height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; border-radius: 10px; cursor: pointer; transition: 0.2s; }
         
+        /* Modal & History Item */
         #history-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 400px; max-height: 70vh; overflow-y: auto; text-align: center; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; font-weight: 600; }
+        .delete-btn { color: #ff4d4d; cursor: pointer; font-size: 1.2rem; padding: 5px; }
+
         #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); text-align: left; }
         .admin-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); }
         .music-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 2px solid var(--border); padding: 8px 0; display: none; justify-content: center; z-index: 999; }
@@ -151,11 +156,9 @@
         if(board[idx] !== "" || turn !== loggedInUser) return;
         const mark = turn === "Ömer" ? "X" : "O";
         board[idx] = mark;
-        
         const newPoints = calculatePoints(board, mark);
         const isFull = !board.includes("");
         let updates = { board: JSON.stringify(board), turn: turn === "Ömer" ? "Begüm" : "Ömer" };
-        
         if(turn === "Ömer") updates.omer_round_points = newPoints;
         else updates.begum_round_points = newPoints;
 
@@ -164,10 +167,8 @@
             const oFinal = updates.omer_round_points || db.omer_round_points;
             if(oFinal > bFinal) { updates.omer_wins = db.omer_wins + 1; fireConfetti(); }
             else if(bFinal > oFinal) { updates.begum_wins = db.begum_wins + 1; fireConfetti(); }
-            
             updates.board = JSON.stringify(Array(36).fill(""));
-            updates.begum_round_points = 0;
-            updates.omer_round_points = 0;
+            updates.begum_round_points = 0; updates.omer_round_points = 0;
             updates.turn = "Ömer";
             setTimeout(async () => { await _supabase.from('xox_durumu').update(updates).eq('id', 1); }, 2000);
         } else {
@@ -176,8 +177,7 @@
     }
 
     function calculatePoints(b, mark) {
-        let pts = 0;
-        const size = 6;
+        let pts = 0; const size = 6;
         const check = (x, y, dx, dy) => {
             for(let i=0; i<3; i++) {
                 let nx = x + i*dx, ny = y + i*dy;
@@ -187,25 +187,56 @@
         };
         for(let r=0; r<size; r++) {
             for(let c=0; c<size; c++) {
-                if(check(r, c, 0, 1)) pts++; // Yatay
-                if(check(r, c, 1, 0)) pts++; // Dikey
-                if(check(r, c, 1, 1)) pts++; // Çapraz sağ
-                if(check(r, c, 1, -1)) pts++; // Çapraz sol
+                if(check(r, c, 0, 1)) pts++; if(check(r, c, 1, 0)) pts++; if(check(r, c, 1, 1)) pts++; if(check(r, c, 1, -1)) pts++;
             }
         }
         return pts;
     }
 
+    // GÜNCELLENDİ: Silme yetkili arşiv fonksiyonu
     async function openHistory(weekId) {
         document.getElementById('history-modal').style.display = 'flex';
         const { data: week } = await _supabase.from('skor_verileri').select('*').eq('id', weekId).single();
         const { data: hist } = await _supabase.from('sarki_gecmisi').select('*').eq('week_id', weekId).order('created_at', { ascending: false });
+        
+        // Kazananı belirle
+        const winner = week.begum_sure > week.omer_sure ? "Begüm" : "Ömer";
+        const canDelete = loggedInUser === winner;
+
         const list = document.getElementById('history-list'); list.innerHTML = "";
         const seen = new Set();
-        if(week.sarki_linki) { seen.add(week.sarki_linki); list.innerHTML += `<div class="history-item"><span>🌟 ${week.sarki_adi}</span></div>`; }
-        hist.forEach(s => { if(!seen.has(s.sarki_linki)) { seen.add(s.sarki_linki); list.innerHTML += `<div class="history-item"><span>${s.sarki_adi}</span></div>`; } });
+
+        // Aktif şarkıyı ekle (Silinemez)
+        if(week.sarki_linki) { 
+            seen.add(week.sarki_linki); 
+            list.innerHTML += `<div class="history-item" style="background: #FFF5F9; border-radius: 8px;">
+                <span>🌟 ${week.sarki_adi} (Aktif)</span>
+                ${canDelete ? `<span class="delete-btn" style="opacity:0.3; cursor:not-allowed" title="Aktif şarkı silinemez">🗑️</span>` : ''}
+            </div>`; 
+        }
+
+        // Geçmiş şarkıları ekle (Yetkiye göre silme butonu)
+        hist.forEach(s => { 
+            if(!seen.has(s.sarki_linki)) { 
+                seen.add(s.sarki_linki); 
+                list.innerHTML += `<div class="history-item">
+                    <span>${s.sarki_adi}</span>
+                    ${canDelete ? `<span class="delete-btn" onclick="deleteSong(${s.id}, ${weekId})">🗑️</span>` : ''}
+                </div>`; 
+            } 
+        });
+        
+        if(list.innerHTML === "") list.innerHTML = "<p style='color:gray'>Arşiv henüz boş.</p>";
     }
+
+    async function deleteSong(id, weekId) { 
+        if(!confirm("Bu şarkıyı arşivden silmek istediğine emin misin?")) return;
+        const { error } = await _supabase.from('sarki_gecmisi').delete().eq('id', id);
+        if(!error) openHistory(weekId); 
+    }
+
     function closeModal() { document.getElementById('history-modal').style.display = 'none'; }
+
     async function updateWeekData() {
         const n = document.getElementById('new-note').value; const v = document.getElementById('new-song-id').value.trim();
         if(!v) return;
@@ -223,4 +254,3 @@
 </script>
 </body>
 </html>
-
