@@ -3,20 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>📱 Skor Tablosu </title>
+    <title>📱 Skor Tablosu</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root { --bg-color: #FDF2F8; --card-bg: #FFFFFF; --text-main: #303A2B; --accent: #FF99C9; --periwinkle: #C1BDDB; --winner: #58FCEC; --record: #FFD700; --border: #FCE7F3; }
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; min-height: 100vh; }
+        
+        /* GİRİŞ EKRANI */
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 85vh; width: 100%; }
         .login-card { background: var(--card-bg); padding: 30px; border-radius: 24px; text-align: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 95%; max-width: 350px; }
-        input { padding: 14px; margin: 8px 0; border: 2px solid var(--border); border-radius: 12px; width: 100%; outline: none; }
+        input { padding: 12px; margin: 8px 0; border: 2px solid var(--border); border-radius: 12px; width: 100%; outline: none; }
         .login-btn { padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
-        #kpss-box { background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; margin: 15px auto; width: 95%; max-width: 550px; cursor: pointer; text-align: center; display: none; }
-        #kpss-content { font-size: 0.9rem; font-weight: 600; line-height: 1.5; color: #86198F; }
-        .container { background: var(--card-bg); padding: 25px; border-radius: 30px; width: 100%; max-width: 550px; display: none; margin: 0 auto 20px auto; border: 1px solid var(--border); text-align: center; }
+
+        #kpss-box { background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; margin-bottom: 15px; width: 100%; max-width: 550px; cursor: pointer; text-align: center; display: none; }
+        #kpss-content { font-size: 0.9rem; font-weight: 600; color: #86198F; }
+
+        /* ANA TABLO KONTEYNERI */
+        .container { background: var(--card-bg); padding: 25px; border-radius: 30px; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; margin-bottom: 20px; display: none; }
         .progress-container { width: 100%; height: 12px; background: #eee; border-radius: 10px; margin: 15px 0; overflow: hidden; display: flex; }
         #bar-begum { height: 100%; background: var(--accent); transition: 0.5s; }
         #bar-omer { height: 100%; background: var(--periwinkle); transition: 0.5s; }
@@ -25,59 +30,120 @@
         .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; min-width: 350px; }
         th, td { padding: 12px 5px; text-align: center; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+
         .winner-cell { position: relative; cursor: pointer; }
         .win-border { border-bottom: 3px solid var(--winner); }
         .winner-text { font-weight: 800; color: #1e293b; }
         .record-holder { font-weight: 900; border-bottom: 4px solid var(--record) !important; color: #8B8000 !important; }
-        .speech-bubble { visibility: hidden; background: var(--text-main); color: #fff; border-radius: 8px; padding: 10px; position: absolute; z-index: 1000; bottom: 120%; left: 50%; transform: translateX(-50%); opacity: 0; transition: 0.3s; min-width: 140px; max-width: 220px; width: max-content; font-size: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); white-space: normal; word-wrap: break-word; pointer-events: none; }
+        .speech-bubble { visibility: hidden; background: var(--text-main); color: #fff; border-radius: 8px; padding: 10px; position: absolute; z-index: 1000; bottom: 120%; left: 50%; transform: translateX(-50%); opacity: 0; transition: 0.3s; min-width: 140px; font-size: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); white-space: normal; word-wrap: break-word; pointer-events: none; }
         .winner-cell:hover .speech-bubble { visibility: visible; opacity: 1; }
-        tr:first-child .speech-bubble { bottom: auto; top: 120%; }
 
-        /* XOX 4x4 CSS - Güncellendi */
-        #xox-section { background: white; border-radius: 30px; padding: 25px; margin: 20px auto 180px auto; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; display: none; }
-        .xox-scores { display: flex; justify-content: space-around; margin-bottom: 5px; font-weight: 800; font-size: 1.1rem; }
-        .round-puan { font-size: 0.8rem; color: #64748b; margin-bottom: 10px; }
-        .xox-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 240px; margin: 0 auto; }
-        .xox-cell { background: #FFF5F9; border: 1px solid var(--border); height: 55px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 900; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        /* SEKMELER VE OYUNLAR */
+        .tab-nav { display: none; gap: 8px; margin: 10px auto; width: 100%; max-width: 550px; background: white; padding: 6px; border-radius: 20px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 12px; border-radius: 15px; border: none; background: none; font-weight: bold; cursor: pointer; font-size: 0.85rem; color: #64748b; }
+        .tab-btn.active { background: var(--accent); color: white; }
         
-        #history-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 400px; max-height: 70vh; overflow-y: auto; text-align: center; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; font-weight: 600; }
-        .delete-btn { color: #ff4d4d; cursor: pointer; font-size: 1.2rem; padding: 5px; }
+        /* ÖNEMLİ: Giriş yapana kadar gizli kalmasını sağlar */
+        .game-panel { background: white; border-radius: 30px; padding: 25px; margin: 0 auto 180px auto; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; display: none !important; }
+        .active-panel { display: block !important; }
 
+        /* GRIDLER */
+        .xox-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 240px; margin: 0 auto; }
+        .xox-cell { background: #FFF5F9; border: 1px solid var(--border); height: 55px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 900; border-radius: 12px; cursor: pointer; }
+        .w-grid { display: flex; flex-direction: column; gap: 6px; margin: 15px auto; }
+        .w-row { display: flex; gap: 6px; justify-content: center; }
+        .w-cell { width: 42px; height: 42px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: 800; border-radius: 10px; font-size: 1.3rem; text-transform: uppercase; transition: 0.3s; }
+        .correct { background: #6aaa64 !important; color: white !important; border-color: #6aaa64 !important; }
+        .present { background: #c9b458 !important; color: white !important; border-color: #c9b458 !important; }
+        .absent { background: #787c7e !important; color: white !important; border-color: #787c7e !important; }
+
+        /* ADMIN PANELİ */
         #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); text-align: left; }
-        .admin-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); }
+        .admin-input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); }
+        
+        /* MODAL FIX */
+        #history-modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; }
+
         .music-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 2px solid var(--border); padding: 8px 0; display: none; justify-content: center; z-index: 999; }
         #youtube-container { width: 95%; max-width: 450px; height: 90px; border-radius: 12px; overflow: hidden; background: #000; }
     </style>
 </head>
 <body>
-<div id="login-screen"><div class="login-card"><h2>🔒 Giriş</h2><input type="text" id="user" placeholder="Begüm / Ömer"><input type="password" id="pass" placeholder="Şifre"><button class="login-btn" onclick="checkLogin()">Giriş Yap</button></div></div>
+
+<div id="login-screen">
+    <div class="login-card"><h2>🔒 Giriş</h2><input type="text" id="user" placeholder="İsim"><input type="password" id="pass" placeholder="Şifre"><button class="login-btn" onclick="checkLogin()">Giriş Yap</button></div>
+</div>
+
 <div id="kpss-box" onclick="showNextFact()"><div id="kpss-content">Yükleniyor...</div></div>
+
 <div class="container" id="main-site">
     <div class="total-card"><div>Begüm <br><span id="total-begum" class="total-val" style="color:var(--accent)">--:--</span></div><div style="width: 1px; background: var(--border);"></div><div>Ömer <br><span id="total-omer" class="total-val" style="color:var(--periwinkle)">--:--</span></div></div>
     <div class="progress-container"><div id="bar-begum"></div><div id="bar-omer"></div></div>
     <div class="table-wrapper"><table><thead><tr><th>Hafta</th><th>Begüm</th><th>Ömer</th><th>🎵 Şarkı</th></tr></thead><tbody id="table-body"></tbody></table></div>
-    <div id="admin-panel"><h4 style="margin:0 0 5px 0">🛠️ Güncelleme</h4><input type="text" id="new-note" class="admin-input"><input type="text" id="new-song-id" class="admin-input" placeholder="YouTube Video ID"><button id="save-btn" class="login-btn" onclick="updateWeekData()">Kaydet</button></div>
+    
+    <div id="admin-panel">
+        <h4 style="margin:0 0 5px 0">🛠️ Haftayı Güncelle</h4>
+        <input type="text" id="new-note" class="admin-input" placeholder="Haftalık not..">
+        <input type="text" id="new-song-id" class="admin-input" placeholder="YouTube Video ID">
+        <button id="save-btn" class="login-btn" onclick="updateWeekData()">Kaydet</button>
+    </div>
 </div>
-<div id="xox-section">
-    <div class="xox-scores"><div style="color: var(--accent);">B: <span id="xox-begum-win">0</span></div><div style="color: var(--periwinkle);">Ö: <span id="xox-omer-win">0</span></div></div>
-    <div class="round-puan">Bu Tur Puanı: <span style="color:var(--accent)" id="r-begum">0</span> - <span style="color:var(--periwinkle)" id="r-omer">0</span></div>
-    <p id="xox-status" style="font-size: 0.8rem; color: #64748b; margin-bottom: 10px;">Bağlanıyor...</p>
+
+<div class="tab-nav" id="game-tabs">
+    <button class="tab-btn active" onclick="showTab('xox')">🎮 XOX</button>
+    <button class="tab-btn" onclick="showTab('wordle')">📝 Wordle</button>
+</div>
+
+<div id="xox-panel" class="game-panel">
+    <div style="display:flex; justify-content:space-around; font-weight:800; margin-bottom:10px;">
+        <div style="color: var(--accent);">B: <span id="xox-b">0</span></div>
+        <div style="color: var(--periwinkle);">Ö: <span id="xox-o">0</span></div>
+    </div>
+    <p id="xox-status" style="font-size: 0.8rem; color:#64748b;">Bağlanıyor...</p>
     <div class="xox-grid" id="xox-grid"></div>
 </div>
-<div id="history-modal"><div class="modal-content"><h3>🎵 Arşiv</h3><div id="history-list"></div><button class="login-btn" onclick="closeModal()" style="margin-top:10px">Kapat</button></div></div>
+
+<div id="wordle-panel" class="game-panel">
+    <div style="display:flex; justify-content:space-around; font-weight:800; margin-bottom:10px;">
+        <div style="color: var(--accent);">B: <span id="w-b">0</span></div>
+        <div style="color: var(--periwinkle);">Ö: <span id="w-o">0</span></div>
+    </div>
+    <p id="w-hint" style="font-size:0.95rem; font-weight:600; color:#64748b; margin:15px 0;"></p>
+    
+    <div id="w-setup" style="display:none">
+        <input type="text" id="w-secret" placeholder="5-7 harfli kelime.." maxlength="7" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:8px;">
+        <button class="login-btn" onclick="setWordle()" style="margin-top:10px">Kilitle</button>
+    </div>
+    
+    <div id="w-play" style="display:none">
+        <div id="w-board" class="w-grid"></div>
+        <div id="w-input-area">
+            <input type="text" id="w-guess" maxlength="7" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:10px; width:70%;" onkeyup="if(event.key==='Enter') submitGuess()">
+            <button class="login-btn" onclick="submitGuess()" style="width:70%; margin-top:5px;">Tahmin Et</button>
+        </div>
+    </div>
+</div>
+
+<div id="history-modal"><div class="modal-content"><h3 style="margin-top:0">🎵 Arşiv</h3><div id="history-list" style="max-height:250px; overflow-y:auto;"></div><button class="login-btn" onclick="closeModal()" style="margin-top:15px">Kapat</button></div></div>
 <div class="music-bar" id="music-player"><div id="youtube-container"></div></div>
 
 <script>
-    const kpssData = ["Yeni Zigana Tüneli: 14,5 km ile Türkiye'nin en uzun tüneli.", "Yusufeli Barajı: Türkiye'nin en yüksek barajı.", "Gordion Antik Kenti: UNESCO listesine giren 20. varlığımız.", "Sabiha Gökçen: Dünyanın ilk kadın savaş pilotu."];
-    let currentFactIndex = 0;
+    const kFacts = ["Yeni Zigana Tüneli: 14,5 km ile Türkiye'nin en uzun tüneli.", "Yusufeli Barajı: Türkiye'nin en yüksek barajı.", "Milletvekili Sayısı: TBMM'de 600 vekil bulunur.", "Gordion Antik Kenti: UNESCO listesine giren 20. varlığımız."];
+    let kIdx = 0;
     const SB_URL = "https://yczoplqskmrolpbdbsnp.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inljem9wbHFza21yb2xwYmRic25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDQ3ODAsImV4cCI6MjA4NjU4MDc4MH0.hmEnEHugyTU6gLkFHJ9qsMVKETWCI6YN24SShfol6sc";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
     let loggedInUser = "";
 
-    function showNextFact() { currentFactIndex = (currentFactIndex + 1) % kpssData.length; document.getElementById('kpss-content').innerText = kpssData[currentFactIndex]; }
+    function showTab(t) {
+        document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active-panel'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(t + '-panel').classList.add('active-panel');
+        event.currentTarget.classList.add('active');
+    }
+
+    function showNextFact() { kIdx = (kIdx + 1) % kFacts.length; document.getElementById('kpss-content').innerText = kFacts[kIdx]; }
     setInterval(showNextFact, 15000);
 
     async function checkLogin() {
@@ -87,168 +153,141 @@
             loggedInUser = u;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-site').style.display = 'block';
+            document.getElementById('game-tabs').style.display = 'flex';
+            document.getElementById('xox-panel').classList.add('active-panel');
             document.getElementById('music-player').style.display = 'flex';
             document.getElementById('kpss-box').style.display = 'block';
-            document.getElementById('xox-section').style.display = 'block';
-            fetchData(); initXOX();
-        } else { alert("Hata!"); }
+            fetchStats(); initXOX(); initWordle();
+        } else { alert("Hatalı!"); }
     }
 
-    async function fetchData() {
+    async function fetchStats() {
         const { data } = await _supabase.from('skor_verileri').select('*').order('id', { ascending: false });
-        if (data) { renderTable(data); updateProgressBar(data); showAdminIfWinner(data); }
-    }
-
-    function updateProgressBar(data) {
-        let tO = 0, tB = 0;
-        data.forEach(d => { tO += toMinutes(d.omer_sure); tB += toMinutes(d.begum_sure); });
-        const total = tO + tB;
-        if(total > 0) {
-            document.getElementById('bar-begum').style.width = (tB / total * 100) + "%";
-            document.getElementById('bar-omer').style.width = (tO / total * 100) + "%";
+        if (data) {
+            const tbody = document.getElementById('table-body'); tbody.innerHTML = "";
+            let tO = 0, tB = 0; let all = [];
+            data.forEach(d => { if(d.omer_sure) all.push(toMinutes(d.omer_sure)); if(d.begum_sure) all.push(toMinutes(d.begum_sure)); });
+            const best = Math.max(...all);
+            data.forEach(d => {
+                const mO = toMinutes(d.omer_sure); const mB = toMinutes(d.begum_sure);
+                tO += mO; tB += mB; const bWin = mB > mO;
+                tbody.innerHTML += `<tr><td>${d.hafta}</td>
+                    <td class="winner-cell ${bWin?'winner-text win-border':''} ${mB===best?'record-holder':''}" onclick="${bWin?'fireConfetti()':''}">
+                        ${d.begum_sure}${bWin?'👑':''}${mB===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td>
+                    <td class="winner-cell ${!bWin?'winner-text win-border':''} ${mO===best?'record-holder':''}" onclick="${!bWin?'fireConfetti()':''}">
+                        ${d.omer_sure}${!bWin?'👑':''}${mO===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td>
+                    <td style="font-size:0.75rem;">${d.sarki_adi || '-'}<br><span onclick="openHistory(${d.id})" style="cursor:pointer; font-size:1.1rem;">📜</span></td></tr>`;
+            });
+            document.getElementById('total-begum').innerText = formatTime(tB);
+            document.getElementById('total-omer').innerText = formatTime(tO);
+            const tot = tO + tB; if(tot > 0) { document.getElementById('bar-begum').style.width = (tB/tot*100) + "%"; document.getElementById('bar-omer').style.width = (tO/tot*100) + "%"; }
+            if(data[0]) { updateMusic(data[0]); showAdminIfWinner(data); }
         }
-    }
-
-    function renderTable(data) {
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = ""; let tO = 0, tB = 0;
-        let allTimes = [];
-        data.forEach(d => { if(d.omer_sure) allTimes.push(toMinutes(d.omer_sure)); if(d.begum_sure) allTimes.push(toMinutes(d.begum_sure)); });
-        const best = Math.max(...allTimes);
-        data.forEach(d => {
-            const mO = toMinutes(d.omer_sure); const mB = toMinutes(d.begum_sure);
-            tO += mO; tB += mB;
-            const bWin = mB > mO;
-            tbody.innerHTML += `<tr><td>${d.hafta}</td><td class="winner-cell ${bWin?'winner-text win-border':''} ${mB===best?'record-holder':''}" onclick="${bWin?'fireConfetti()':''}">${d.begum_sure}${bWin?'👑':''}${mB===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td><td class="winner-cell ${!bWin?'winner-text win-border':''} ${mO===best?'record-holder':''}" onclick="${!bWin?'fireConfetti()':''}">${d.omer_sure}${!bWin?'👑':''}${mO===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td><td style="font-size: 0.7rem; color: #64748b;">${d.sarki_adi || '-'}<br><span onclick="openHistory(${d.id})" style="cursor:pointer; font-size:1.1rem;">📜</span></td></tr>`;
-        });
-        document.getElementById('total-begum').innerText = formatTime(tB);
-        document.getElementById('total-omer').innerText = formatTime(tO);
-        updateMusic(data[0]);
     }
 
     async function initXOX() {
         const { data } = await _supabase.from('xox_durumu').select('*').eq('id', 1).single();
         renderXOX(data);
-        _supabase.channel('xox-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'xox_durumu' }, payload => { renderXOX(payload.new); }).subscribe();
+        _supabase.channel('xox').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'xox_durumu' }, p => renderXOX(p.new)).subscribe();
     }
-
     function renderXOX(data) {
         const board = JSON.parse(data.board);
-        const grid = document.getElementById('xox-grid');
-        grid.innerHTML = "";
-        board.forEach((val, i) => {
-            const cell = document.createElement('div');
-            cell.className = "xox-cell";
-            cell.innerText = val;
-            cell.style.color = val === "X" ? "var(--periwinkle)" : "var(--accent)";
-            cell.onclick = () => makeMove(i, board, data.turn, data);
-            grid.appendChild(cell);
+        const grid = document.getElementById('xox-grid'); grid.innerHTML = "";
+        board.forEach((v, i) => {
+            const c = document.createElement('div'); c.className = "xox-cell"; c.innerText = v;
+            c.style.color = v === "X" ? "var(--periwinkle)" : "var(--accent)";
+            c.onclick = () => makeMoveXOX(i, board, data.turn);
+            grid.appendChild(c);
         });
         document.getElementById('xox-status').innerText = `Sıra: ${data.turn}`;
-        document.getElementById('xox-begum-win').innerText = data.begum_wins;
-        document.getElementById('xox-omer-win').innerText = data.omer_wins;
-        document.getElementById('r-begum').innerText = data.begum_round_points;
-        document.getElementById('r-omer').innerText = data.omer_round_points;
+        document.getElementById('xox-b').innerText = data.begum_wins; document.getElementById('xox-o').innerText = data.omer_wins;
+    }
+    async function makeMoveXOX(idx, b, turn) {
+        if(b[idx] !== "" || turn !== loggedInUser) return;
+        b[idx] = turn === "Ömer" ? "X" : "O";
+        let next = turn === "Ömer" ? "Begüm" : "Ömer";
+        let ups = { board: JSON.stringify(b), turn: next };
+        if(!b.includes("")) { ups.board = '["","","","","","","","","","","","","","","",""]'; ups.turn = "Begüm"; }
+        await _supabase.from('xox_durumu').update(ups).eq('id', 1);
     }
 
-    async function makeMove(idx, board, turn, db) {
-        if(board[idx] !== "" || turn !== loggedInUser) return;
-        const mark = turn === "Ömer" ? "X" : "O";
-        board[idx] = mark;
-        
-        const newPoints = calculatePoints(board, mark);
-        const isFull = !board.includes("");
-        let updates = { board: JSON.stringify(board), turn: turn === "Ömer" ? "Begüm" : "Ömer" };
-        
-        if(turn === "Ömer") updates.omer_round_points = newPoints;
-        else updates.begum_round_points = newPoints;
+    async function initWordle() {
+        const { data } = await _supabase.from('wordle_durumu').select('*').eq('id', 1).single();
+        renderWordle(data);
+        _supabase.channel('wordle').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'wordle_durumu' }, p => renderWordle(p.new)).subscribe();
+    }
+    function renderWordle(db) {
+        document.getElementById('w-b').innerText = db.begum_toplam_puan || 0;
+        document.getElementById('w-o').innerText = db.omer_toplam_puan || 0;
+        const wHint = document.getElementById('w-hint');
+        const wPlay = document.getElementById('w-play');
+        const wSetup = document.getElementById('w-setup');
 
-        if(isFull) {
-            const bFinal = updates.begum_round_points || db.begum_round_points;
-            const oFinal = updates.omer_round_points || db.omer_round_points;
-            
-            // GÜNCELLENDİ: Kaybeden Başlar Mantığı
-            if(oFinal > bFinal) { 
-                updates.omer_wins = db.omer_wins + 1; 
-                updates.turn = "Begüm"; // Kaybeden başlar
-                fireConfetti(); 
-            }
-            else if(bFinal > oFinal) { 
-                updates.begum_wins = db.begum_wins + 1; 
-                updates.turn = "Ömer"; // Kaybeden başlar
-                fireConfetti(); 
-            } else {
-                updates.turn = "Ömer"; // Beraberlikte varsayılan
-            }
-            
-            updates.board = JSON.stringify(Array(16).fill("")); // 4x4 Reset
-            updates.begum_round_points = 0;
-            updates.omer_round_points = 0;
-            
-            setTimeout(async () => { await _supabase.from('xox_durumu').update(updates).eq('id', 1); }, 2000);
+        if (db.durum === 'bekliyor') {
+            const isSetter = db.belirleyen === loggedInUser;
+            wSetup.style.display = isSetter ? "block" : "none";
+            wPlay.style.display = "none";
+            wHint.innerText = isSetter ? "Sıra sende! Kelime belirle." : `${db.belirleyen} kelime belirliyor, lütfen bekle...`;
         } else {
-            await _supabase.from('xox_durumu').update(updates).eq('id', 1);
+            wSetup.style.display = "none";
+            wPlay.style.display = "block";
+            const isGuesser = db.belirleyen !== loggedInUser;
+            document.getElementById('w-input-area').style.display = isGuesser ? "block" : "none";
+            
+            // DÜZELTME: Kelimeyi belirleyen kişiye rakibinin ismini gösteriyoruz.
+            const opponent = db.belirleyen === "Ömer" ? "Begüm" : "Ömer";
+            wHint.innerText = isGuesser ? "Hadi çöz!" : `${opponent} kelimeni çözmeye çalışıyor...`;
+            
+            const board = document.getElementById('w-board'); board.innerHTML = "";
+            const guesses = JSON.parse(db.tahminler || "[]");
+            for(let i=0; i<6; i++) {
+                const row = document.createElement('div'); row.className = "w-row";
+                const g = guesses[i] || "";
+                for(let j=0; j<db.harf_sayisi; j++) {
+                    const c = document.createElement('div'); c.className = "w-cell"; c.innerText = g[j] || "";
+                    if(g) {
+                        if(db.kelime[j] === g[j]) c.classList.add('correct');
+                        else if(db.kelime.includes(g[j])) c.classList.add('present');
+                        else c.classList.add('absent');
+                    }
+                    row.appendChild(c);
+                }
+                board.appendChild(row);
+            }
         }
     }
-
-    function calculatePoints(b, mark) {
-        let pts = 0;
-        const size = 4; // GÜNCELLENDİ: 4x4
-        const check = (x, y, dx, dy) => {
-            for(let i=0; i<3; i++) {
-                let nx = x + i*dx, ny = y + i*dy;
-                if(nx<0 || nx>=size || ny<0 || ny>=size || b[nx*size+ny] !== mark) return false;
+    async function setWordle() {
+        const v = document.getElementById('w-secret').value.trim().toLowerCase();
+        if(v.length < 5 || v.length > 7) return alert("5-7 harf!");
+        await _supabase.from('wordle_durumu').update({ kelime: v, durum: 'belirlendi', harf_sayisi: v.length, tahminler: '[]' }).eq('id', 1);
+    }
+    async function submitGuess() {
+        const inp = document.getElementById('w-guess'); const g = inp.value.trim().toLowerCase();
+        const { data: db } = await _supabase.from('wordle_durumu').select('*').eq('id', 1).single();
+        if(g.length !== db.harf_sayisi) return alert(`${db.harf_sayisi} harf gir!`);
+        let gs = JSON.parse(db.tahminler); gs.push(g); inp.value = "";
+        await _supabase.from('wordle_durumu').update({ tahminler: JSON.stringify(gs) }).eq('id', 1);
+        setTimeout(async () => {
+            if(g === db.kelime) {
+                fireConfetti(); const pts = [10, 9, 8, 7, 6, 5][gs.length-1] || 5;
+                alert(`Tebrikler! Kelime: ${db.kelime.toUpperCase()}\n+${pts} Puan aldın!`);
+                await _supabase.from('wordle_durumu').update({ durum:'bekliyor', kelime:null, tahminler:'[]', belirleyen:db.belirleyen==="Ömer"?"Begüm":"Ömer", [loggedInUser==="Ömer"?"omer_toplam_puan":"begum_toplam_puan"]: (loggedInUser==="Ömer"?db.omer_toplam_puan:db.begum_toplam_puan)+pts }).eq('id', 1);
+            } else if(gs.length >= 6) {
+                alert(`Bilemedin! Doğru Kelime: ${db.kelime.toUpperCase()}\n${db.belirleyen} +5 Puan kazandı!`);
+                await _supabase.from('wordle_durumu').update({ durum:'bekliyor', kelime:null, tahminler:'[]', belirleyen:db.belirleyen==="Ömer"?"Begüm":"Ömer", [db.belirleyen==="Ömer"?"omer_toplam_puan":"begum_toplam_puan"]: (db.belirleyen==="Ömer"?db.omer_toplam_puan:db.begum_toplam_puan)+5 }).eq('id', 1);
             }
-            return true;
-        };
-        for(let r=0; r<size; r++) {
-            for(let c=0; c<size; c++) {
-                if(check(r, c, 0, 1)) pts++; 
-                if(check(r, c, 1, 0)) pts++; 
-                if(check(r, c, 1, 1)) pts++; 
-                if(check(r, c, 1, -1)) pts++; 
-            }
-        }
-        return pts;
+        }, 600);
     }
 
     async function openHistory(weekId) {
         document.getElementById('history-modal').style.display = 'flex';
         const { data: week } = await _supabase.from('skor_verileri').select('*').eq('id', weekId).single();
         const { data: hist } = await _supabase.from('sarki_gecmisi').select('*').eq('week_id', weekId).order('created_at', { ascending: false });
-        
-        const winner = week.begum_sure > week.omer_sure ? "Begüm" : "Ömer";
-        const canDelete = loggedInUser === winner;
-
         const list = document.getElementById('history-list'); list.innerHTML = "";
         const seen = new Set();
-
-        if(week.sarki_linki) { 
-            seen.add(week.sarki_linki); 
-            list.innerHTML += `<div class="history-item" style="background: #FFF5F9; border-radius: 8px;">
-                <span>🌟 ${week.sarki_adi} (Aktif)</span>
-                ${canDelete ? `<span class="delete-btn" style="opacity:0.3; cursor:not-allowed" title="Aktif şarkı silinemez">🗑️</span>` : ''}
-            </div>`; 
-        }
-
-        hist.forEach(s => { 
-            if(!seen.has(s.sarki_linki)) { 
-                seen.add(s.sarki_linki); 
-                list.innerHTML += `<div class="history-item">
-                    <span>${s.sarki_adi}</span>
-                    ${canDelete ? `<span class="delete-btn" onclick="deleteSong(${s.id}, ${weekId})">🗑️</span>` : ''}
-                </div>`; 
-            } 
-        });
-        if(list.innerHTML === "") list.innerHTML = "<p style='color:gray'>Arşiv henüz boş.</p>";
+        if(week.sarki_linki) { seen.add(week.sarki_linki); list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee;">🌟 ${week.sarki_adi}</div>`; }
+        hist.forEach(s => { if(!seen.has(s.sarki_linki)) { seen.add(s.sarki_linki); list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee;">${s.sarki_adi}</div>`; } });
     }
-
-    async function deleteSong(id, weekId) { 
-        if(!confirm("Bu şarkıyı arşivden silmek istediğine emin misin?")) return;
-        const { error } = await _supabase.from('sarki_gecmisi').delete().eq('id', id);
-        if(!error) openHistory(weekId); 
-    }
-
     function closeModal() { document.getElementById('history-modal').style.display = 'none'; }
     async function updateWeekData() {
         const n = document.getElementById('new-note').value; const v = document.getElementById('new-song-id').value.trim();
@@ -261,7 +300,7 @@
     }
     function showAdminIfWinner(d) { const l = d[0]; if(loggedInUser === (l.begum_sure > l.omer_sure ? "Begüm" : "Ömer")) { document.getElementById('admin-panel').style.display = 'block'; document.getElementById('new-note').value = l.haftanin_notu || ""; } }
     function updateMusic(l) { if(l && l.sarki_linki) document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${l.sarki_linki.trim()}?rel=0&modestbranding=1" frameborder="0" allowfullscreen></iframe>`; }
-    function toMinutes(v) { if(!v) return 0; const p = v.toString().split('.'); return (parseInt(p[0])*60) + (p[1] ? parseInt(p[1].padEnd(2,'0')) : 0); }
+    function toMinutes(v) { if(!v) return 0; const p = v.toString().split('.'); return (parseInt(p[0])*60) + (parseInt(p[1]||0)); }
     function formatTime(tm) { return `${Math.floor(tm/60)}s ${tm%60 < 10 ? '0'+(tm%60) : tm%60}dk`; }
     function fireConfetti() { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
 </script>
