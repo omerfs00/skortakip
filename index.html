@@ -56,6 +56,23 @@
         .correct { background: #6aaa64 !important; color: white !important; border-color: #6aaa64 !important; }
         .present { background: #c9b458 !important; color: white !important; border-color: #c9b458 !important; }
         .absent { background: #787c7e !important; color: white !important; border-color: #787c7e !important; }
+        .subscore { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+        .round-btn { margin-top: 10px; width: 70%; }
+        .hangman-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .hangman-svg { width: 180px; height: 200px; }
+        .hangman-part { stroke: #1f2937; stroke-width: 4; fill: none; opacity: 0.15; transition: opacity 0.25s ease; }
+        .hangman-part.on { opacity: 1; }
+        .h-board { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 100%; }
+        .h-cell { width: 34px; height: 42px; font-size: 1.1rem; }
+        .h-gap { width: 20px; height: 42px; margin-right: 20px; }
+        .letters-used { font-size: 0.9rem; color: #64748b; min-height: 20px; }
+        .feedback-text { font-size: 0.9rem; font-weight: 700; color: #0f766e; min-height: 20px; }
+        .summary-wrap { text-align: left; display: flex; flex-direction: column; gap: 10px; }
+        .summary-title { font-size: 0.85rem; color: #475569; font-weight: 700; }
+        .summary-wordle-grid { display: flex; flex-direction: column; gap: 6px; }
+        .summary-wordle-row { display: flex; gap: 6px; justify-content: center; }
+        .summary-cell { width: 28px; height: 28px; border: 2px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; }
+        .summary-line { font-size: 0.85rem; color: #334155; }
 
         /* ADMIN PANELİ */
         #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); text-align: left; }
@@ -91,14 +108,15 @@
 </div>
 
 <div class="tab-nav" id="game-tabs">
-    <button class="tab-btn active" onclick="showTab('xox')">🎮 XOX</button>
-    <button class="tab-btn" onclick="showTab('wordle')">📝 Wordle</button>
+    <button class="tab-btn active" onclick="showTab('xox', event)">🎮 XOX</button>
+    <button class="tab-btn" onclick="showTab('wordle', event)">📝 Wordle</button>
+    <button class="tab-btn" onclick="showTab('hangman', event)">🪢 Adam Asmaca</button>
 </div>
 
 <div id="xox-panel" class="game-panel">
     <div style="display:flex; justify-content:space-around; font-weight:800; margin-bottom:10px;">
-        <div style="color: var(--accent);">B: <span id="xox-b">0</span></div>
-        <div style="color: var(--periwinkle);">Ö: <span id="xox-o">0</span></div>
+        <div style="color: var(--accent);">B: <span id="xox-b">0</span><div class="subscore">Tur: <span id="xox-rb">0</span></div></div>
+        <div style="color: var(--periwinkle);">Ö: <span id="xox-o">0</span><div class="subscore">Tur: <span id="xox-ro">0</span></div></div>
     </div>
     <p id="xox-status" style="font-size: 0.8rem; color:#64748b;">Bağlanıyor...</p>
     <div class="xox-grid" id="xox-grid"></div>
@@ -120,12 +138,52 @@
         <div id="w-board" class="w-grid"></div>
         <div id="w-input-area">
             <input type="text" id="w-guess" maxlength="7" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:10px; width:70%;" onkeyup="if(event.key==='Enter') submitGuess()">
-            <button class="login-btn" onclick="submitGuess()" style="width:70%; margin-top:5px;">Tahmin Et</button>
+            <button id="w-submit-btn" class="login-btn" onclick="submitGuess()" style="width:70%; margin-top:5px;">Tahmin Et</button>
         </div>
     </div>
+    <p id="w-feedback" class="feedback-text"></p>
+    <button class="login-btn round-btn" onclick="openRoundSummary('wordle')">Geçmiş Tur</button>
+</div>
+
+<div id="hangman-panel" class="game-panel">
+    <div style="display:flex; justify-content:space-around; font-weight:800; margin-bottom:10px;">
+        <div style="color: var(--accent);">B: <span id="h-b">0</span></div>
+        <div style="color: var(--periwinkle);">Ö: <span id="h-o">0</span></div>
+    </div>
+    <p id="h-hint" style="font-size:0.95rem; font-weight:600; color:#64748b; margin:15px 0;"></p>
+    <p id="h-feedback" class="feedback-text"></p>
+
+    <div id="h-setup" style="display:none">
+        <input type="text" id="h-secret" placeholder="Kelime/Cumle (max 50 karakter)" maxlength="50" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:8px;">
+        <input type="text" id="h-clue" placeholder="İpucu" maxlength="80" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:8px;">
+        <button class="login-btn" onclick="setHangman()" style="margin-top:10px">Kilitle</button>
+    </div>
+
+    <div id="h-play" style="display:none" class="hangman-wrap">
+        <svg class="hangman-svg" viewBox="0 0 180 200" aria-label="Adam Asmaca">
+            <line x1="20" y1="185" x2="120" y2="185" class="hangman-part" style="opacity:1"></line>
+            <line x1="50" y1="185" x2="50" y2="20" class="hangman-part" style="opacity:1"></line>
+            <line x1="50" y1="20" x2="115" y2="20" class="hangman-part" style="opacity:1"></line>
+            <line x1="115" y1="20" x2="115" y2="38" class="hangman-part" style="opacity:1"></line>
+            <circle cx="115" cy="56" r="18" id="h-part-1" class="hangman-part"></circle>
+            <line x1="115" y1="74" x2="115" y2="122" id="h-part-2" class="hangman-part"></line>
+            <line x1="115" y1="92" x2="90" y2="108" id="h-part-3" class="hangman-part"></line>
+            <line x1="115" y1="92" x2="140" y2="108" id="h-part-4" class="hangman-part"></line>
+            <line x1="115" y1="122" x2="95" y2="150" id="h-part-5" class="hangman-part"></line>
+            <line x1="115" y1="122" x2="135" y2="150" id="h-part-6" class="hangman-part"></line>
+        </svg>
+        <div id="h-board" class="h-board"></div>
+        <div id="h-used" class="letters-used"></div>
+        <div id="h-input-area">
+            <input type="text" id="h-guess" maxlength="1" placeholder="Harf" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:10px; width:70%; text-transform:lowercase;" onkeyup="if(event.key==='Enter') submitHangmanGuess()">
+            <button id="h-submit-btn" class="login-btn" onclick="submitHangmanGuess()" style="width:70%; margin-top:5px;">Harf Tahmin Et</button>
+        </div>
+    </div>
+    <button class="login-btn round-btn" onclick="openRoundSummary('hangman')">Geçmiş Tur</button>
 </div>
 
 <div id="history-modal"><div class="modal-content"><h3 style="margin-top:0">🎵 Arşiv</h3><div id="history-list" style="max-height:250px; overflow-y:auto;"></div><button class="login-btn" onclick="closeModal()" style="margin-top:15px">Kapat</button></div></div>
+<div id="round-modal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;"><div class="modal-content"><h3 id="round-modal-title" style="margin-top:0">Geçmiş Tur</h3><div id="round-summary-content" style="text-align:left; max-height:320px; overflow:auto; background:#f8fafc; border-radius:10px; padding:10px; font-size:0.8rem;"></div><button class="login-btn" onclick="closeRoundModal()" style="margin-top:15px">Kapat</button></div></div>
 <div class="music-bar" id="music-player"><div id="youtube-container"></div></div>
 
 <script>
@@ -134,13 +192,245 @@
     const SB_URL = "https://yczoplqskmrolpbdbsnp.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inljem9wbHFza21yb2xwYmRic25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDQ3ODAsImV4cCI6MjA4NjU4MDc4MH0.hmEnEHugyTU6gLkFHJ9qsMVKETWCI6YN24SShfol6sc";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
+    const EMPTY_XOX_BOARD = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
+    const XOX_TRIPLES = buildXOXTriples();
+    const DataAdapters = {
+        xox(raw) {
+            return {
+                board: parseJsonField(raw.board, EMPTY_XOX_BOARD.slice()),
+                turn: raw.turn,
+                begumWins: raw.begum_wins || 0,
+                omerWins: raw.omer_wins || 0
+            };
+        },
+        wordle(raw) {
+            return {
+                raw,
+                word: (raw.kelime || "").toLowerCase(),
+                status: raw.durum,
+                setter: raw.belirleyen,
+                length: raw.harf_sayisi || 0,
+                guesses: parseJsonField(raw.tahminler, []),
+                begumScore: raw.begum_toplam_puan || 0,
+                omerScore: raw.omer_toplam_puan || 0,
+                lastRoundSummary: raw.son_tur_ozeti || null
+            };
+        },
+        hangman(raw) {
+            const scores = typeof raw.puanlar === 'string' ? parseJsonField(raw.puanlar, {}) : (raw.puanlar || {});
+            return {
+                raw,
+                word: (raw.kelime || "").toLowerCase(),
+                clue: raw.ipucu || "",
+                setter: raw.belirleyen || "Begüm",
+                status: raw.durum || "bekliyor",
+                wrongLetters: parseJsonField(raw.yanlis_harfler, []),
+                correctLetters: parseJsonField(raw.dogru_harfler, []),
+                begumScore: scores.begum || 0,
+                omerScore: scores.omer || 0,
+                lastRoundSummary: raw.son_tur_ozeti || null
+            };
+        }
+    };
     let loggedInUser = "";
+    let wordleWaiting = false;
+    let hangmanWaiting = false;
+    let wordleMessageTimer = null;
+    let hangmanMessageTimer = null;
 
-    function showTab(t) {
+    function parseJsonField(value, fallback) {
+        if (value === null || value === undefined) return fallback;
+        if (typeof value === 'object') return value;
+        try { return JSON.parse(value); } catch { return fallback; }
+    }
+
+    function buildXOXTriples() {
+        const lines = [];
+        const idx = (r, c) => r * 4 + c;
+        for (let r = 0; r < 4; r++) {
+            for (let c = 0; c <= 1; c++) lines.push([idx(r, c), idx(r, c + 1), idx(r, c + 2)]);
+        }
+        for (let c = 0; c < 4; c++) {
+            for (let r = 0; r <= 1; r++) lines.push([idx(r, c), idx(r + 1, c), idx(r + 2, c)]);
+        }
+        for (let r = 0; r <= 1; r++) {
+            for (let c = 0; c <= 1; c++) lines.push([idx(r, c), idx(r + 1, c + 1), idx(r + 2, c + 2)]);
+        }
+        for (let r = 0; r <= 1; r++) {
+            for (let c = 2; c <= 3; c++) lines.push([idx(r, c), idx(r + 1, c - 1), idx(r + 2, c - 2)]);
+        }
+        return lines;
+    }
+
+    function countXOXTriples(board, symbol) {
+        return XOX_TRIPLES.reduce((acc, line) => {
+            return acc + (line.every(i => board[i] === symbol) ? 1 : 0);
+        }, 0);
+    }
+
+    function buildFrequencyMap(word) {
+        const map = {};
+        for (const ch of word) map[ch] = (map[ch] || 0) + 1;
+        return map;
+    }
+
+    function evaluateWordleGuess(secret, guess) {
+        const marks = Array(guess.length).fill('absent');
+        const freq = buildFrequencyMap(secret);
+        for (let i = 0; i < guess.length; i++) {
+            if (guess[i] === secret[i]) {
+                marks[i] = 'correct';
+                freq[guess[i]] -= 1;
+            }
+        }
+        for (let i = 0; i < guess.length; i++) {
+            if (marks[i] === 'correct') continue;
+            const ch = guess[i];
+            if ((freq[ch] || 0) > 0) {
+                marks[i] = 'present';
+                freq[ch] -= 1;
+            }
+        }
+        return marks;
+    }
+
+    function switchUser(user) {
+        return user === "Ömer" ? "Begüm" : "Ömer";
+    }
+
+    function setWordleInputState(disabled) {
+        const wInput = document.getElementById('w-guess');
+        const wBtn = document.getElementById('w-submit-btn');
+        if (wInput) wInput.disabled = disabled;
+        if (wBtn) wBtn.disabled = disabled;
+    }
+
+    function setHangmanInputState(disabled) {
+        const hInput = document.getElementById('h-guess');
+        const hBtn = document.getElementById('h-submit-btn');
+        if (hInput) hInput.disabled = disabled;
+        if (hBtn) hBtn.disabled = disabled;
+    }
+
+    async function fetchWordleAndRender() {
+        const { data } = await _supabase.from('wordle_durumu').select('*').eq('id', 1).single();
+        if (data) renderWordle(data);
+    }
+
+    async function fetchHangmanAndRender() {
+        const { data } = await _supabase.from('adam_asmaca_durumu').select('*').eq('id', 1).single();
+        if (data) renderHangman(data);
+    }
+
+    function serializePayloadForSupabase(payload) {
+        const serialized = {};
+        Object.keys(payload).forEach(key => {
+            const value = payload[key];
+            if (Array.isArray(value)) {
+                serialized[key] = JSON.stringify(value);
+                return;
+            }
+            if (value && typeof value === 'object') {
+                serialized[key] = JSON.stringify(value);
+                return;
+            }
+            serialized[key] = value;
+        });
+        return serialized;
+    }
+
+    async function updateRowWithDebug(table, payload, rowId = 1) {
+        const serializedPayload = serializePayloadForSupabase(payload);
+        const result = await _supabase.from(table).update(serializedPayload).eq('id', rowId);
+        if (result.error) {
+            console.error(`Supabase update error [${table}]`, result.error, serializedPayload);
+            alert(`DB update hatasi [${table}]: ${result.error.message || 'Bilinmeyen hata'}`);
+        }
+        return result;
+    }
+
+    async function resetHangmanRoundAtomic(nextSetter, nextScores, summary) {
+        const primaryPayload = {
+            durum: 'bekliyor',
+            kelime: null,
+            ipucu: null,
+            yanlis_harfler: [],
+            dogru_harfler: [],
+            belirleyen: nextSetter,
+            puanlar: JSON.stringify({ begum: nextScores.begum, omer: nextScores.omer }),
+            son_tur_ozeti: summary
+        };
+        return updateRowWithDebug('adam_asmaca_durumu', primaryPayload, 1);
+    }
+
+    function showTransientMessage(targetId, timerKey, message, ms = 2000) {
+        const el = document.getElementById(targetId);
+        if (!el) return;
+        el.innerText = message;
+        if (timerKey === 'wordle' && wordleMessageTimer) clearTimeout(wordleMessageTimer);
+        if (timerKey === 'hangman' && hangmanMessageTimer) clearTimeout(hangmanMessageTimer);
+        const timer = setTimeout(() => { el.innerText = ''; }, ms);
+        if (timerKey === 'wordle') wordleMessageTimer = timer;
+        if (timerKey === 'hangman') hangmanMessageTimer = timer;
+    }
+
+    function escapeHtml(v) {
+        return (v || '').toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function renderWordleSummary(summary) {
+        const safeSummary = typeof summary === 'string' ? parseJsonField(summary, {}) : (summary || {});
+        const secret = (safeSummary.kelime || '').toLowerCase();
+        const guesses = Array.isArray(safeSummary.tahminler)
+            ? safeSummary.tahminler
+            : parseJsonField(safeSummary.tahminler, []);
+        const rows = guesses.map(g => {
+            const marks = evaluateWordleGuess(secret, g);
+            const cells = g.split('').map((ch, i) => `<div class="summary-cell ${marks[i]}">${escapeHtml(ch)}</div>`).join('');
+            return `<div class="summary-wordle-row">${cells}</div>`;
+        }).join('');
+        return `
+            <div class="summary-wrap">
+                <div class="summary-title">Wordle Son Tur</div>
+                <div class="summary-line">Kelime: <b>${escapeHtml((safeSummary.kelime || '').toUpperCase())}</b></div>
+                <div class="summary-line">Sonuc: ${escapeHtml(safeSummary.sonuc || '-')} | Puan: ${escapeHtml(safeSummary.puan || 0)}</div>
+                <div class="summary-wordle-grid">${rows || '<div class="summary-line">Tahmin kaydi yok.</div>'}</div>
+            </div>
+        `;
+    }
+
+    function renderHangmanSummary(summary) {
+        const safeSummary = typeof summary === 'string' ? parseJsonField(summary, {}) : (summary || {});
+        const wrong = Array.isArray(safeSummary.yanlis_harfler)
+            ? safeSummary.yanlis_harfler
+            : parseJsonField(safeSummary.yanlis_harfler, []);
+        const word = (safeSummary.kelime || '').toUpperCase();
+        const cells = word.split('').map(ch => {
+            if (ch === ' ') return '<div class="h-gap"></div>';
+            return `<div class="summary-cell absent">${escapeHtml(ch)}</div>`;
+        }).join('');
+        return `
+            <div class="summary-wrap">
+                <div class="summary-title">Adam Asmaca Son Tur</div>
+                <div class="summary-line">Kelime: <b>${escapeHtml((safeSummary.kelime || '').toUpperCase())}</b></div>
+                <div class="summary-line">Ipucu: ${escapeHtml(safeSummary.ipucu || '-')}</div>
+                <div class="summary-line">Yanlis Harfler: ${escapeHtml(wrong.join(', ') || '-')}</div>
+                <div class="summary-line">Sonuc: ${escapeHtml(safeSummary.sonuc || '-')} | Puan: ${escapeHtml(safeSummary.puan || 0)}</div>
+                <div class="summary-wordle-row">${cells}</div>
+            </div>
+        `;
+    }
+
+    function showTab(t, evt) {
         document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active-panel'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(t + '-panel').classList.add('active-panel');
-        event.currentTarget.classList.add('active');
+        if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
     }
 
     function showNextFact() { kIdx = (kIdx + 1) % kFacts.length; document.getElementById('kpss-content').innerText = kFacts[kIdx]; }
@@ -157,7 +447,7 @@
             document.getElementById('xox-panel').classList.add('active-panel');
             document.getElementById('music-player').style.display = 'flex';
             document.getElementById('kpss-box').style.display = 'block';
-            fetchStats(); initXOX(); initWordle();
+            fetchStats(); initXOX(); initWordle(); initHangman();
         } else { alert("Hatalı!"); }
     }
 
@@ -191,65 +481,82 @@
         _supabase.channel('xox').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'xox_durumu' }, p => renderXOX(p.new)).subscribe();
     }
     function renderXOX(data) {
-        const board = JSON.parse(data.board);
+        const ui = DataAdapters.xox(data);
+        const board = ui.board;
+        const roundBegum = countXOXTriples(board, 'O');
+        const roundOmer = countXOXTriples(board, 'X');
         const grid = document.getElementById('xox-grid'); grid.innerHTML = "";
         board.forEach((v, i) => {
             const c = document.createElement('div'); c.className = "xox-cell"; c.innerText = v;
             c.style.color = v === "X" ? "var(--periwinkle)" : "var(--accent)";
-            c.onclick = () => makeMoveXOX(i, board, data.turn);
+            c.onclick = () => makeMoveXOX(i, data);
             grid.appendChild(c);
         });
-        document.getElementById('xox-status').innerText = `Sıra: ${data.turn}`;
-        document.getElementById('xox-b').innerText = data.begum_wins; document.getElementById('xox-o').innerText = data.omer_wins;
+        document.getElementById('xox-status').innerText = `Sıra: ${ui.turn} | 3'lü setler canlı puanlanır.`;
+        document.getElementById('xox-b').innerText = ui.begumWins;
+        document.getElementById('xox-o').innerText = ui.omerWins;
+        document.getElementById('xox-rb').innerText = roundBegum;
+        document.getElementById('xox-ro').innerText = roundOmer;
     }
-    async function makeMoveXOX(idx, b, turn) {
+    async function makeMoveXOX(idx, data) {
+        const ui = DataAdapters.xox(data);
+        const b = ui.board;
+        const turn = ui.turn;
         if(b[idx] !== "" || turn !== loggedInUser) return;
         b[idx] = turn === "Ömer" ? "X" : "O";
-        let next = turn === "Ömer" ? "Begüm" : "Ömer";
+        let next = switchUser(turn);
         let ups = { board: JSON.stringify(b), turn: next };
-        if(!b.includes("")) { ups.board = '["","","","","","","","","","","","","","","",""]'; ups.turn = "Begüm"; }
-        await _supabase.from('xox_durumu').update(ups).eq('id', 1);
+        if(!b.includes("")) {
+            const roundBegum = countXOXTriples(b, 'O');
+            const roundOmer = countXOXTriples(b, 'X');
+            let begumWins = ui.begumWins;
+            let omerWins = ui.omerWins;
+            if (roundBegum > roundOmer) begumWins += 1;
+            if (roundOmer > roundBegum) omerWins += 1;
+            ups = { board: JSON.stringify(EMPTY_XOX_BOARD), turn: "Begüm", begum_wins: begumWins, omer_wins: omerWins };
+        }
+        await updateRowWithDebug('xox_durumu', ups, 1);
     }
 
     async function initWordle() {
         const { data } = await _supabase.from('wordle_durumu').select('*').eq('id', 1).single();
         renderWordle(data);
-        _supabase.channel('wordle').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'wordle_durumu' }, p => renderWordle(p.new)).subscribe();
+        _supabase.channel('wordle').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'wordle_durumu' }, payload => {
+            if (payload?.new) renderWordle(payload.new);
+        }).subscribe();
     }
     function renderWordle(db) {
-        document.getElementById('w-b').innerText = db.begum_toplam_puan || 0;
-        document.getElementById('w-o').innerText = db.omer_toplam_puan || 0;
+        const ui = DataAdapters.wordle(db);
+        wordleWaiting = false;
+        document.getElementById('w-b').innerText = ui.begumScore;
+        document.getElementById('w-o').innerText = ui.omerScore;
         const wHint = document.getElementById('w-hint');
         const wPlay = document.getElementById('w-play');
         const wSetup = document.getElementById('w-setup');
-
-        if (db.durum === 'bekliyor') {
-            const isSetter = db.belirleyen === loggedInUser;
+        if (ui.status === 'bekliyor') {
+            const isSetter = ui.setter === loggedInUser;
             wSetup.style.display = isSetter ? "block" : "none";
             wPlay.style.display = "none";
-            wHint.innerText = isSetter ? "Sıra sende! Kelime belirle." : `${db.belirleyen} kelime belirliyor, lütfen bekle...`;
+            wHint.innerText = isSetter ? "Sıra sende! Kelime belirle." : `${ui.setter} kelime belirliyor, lütfen bekle...`;
         } else {
             wSetup.style.display = "none";
             wPlay.style.display = "block";
-            const isGuesser = db.belirleyen !== loggedInUser;
+            const isGuesser = ui.setter !== loggedInUser;
             document.getElementById('w-input-area').style.display = isGuesser ? "block" : "none";
+            setWordleInputState(!isGuesser || wordleWaiting);
             
-            // DÜZELTME: Kelimeyi belirleyen kişiye rakibinin ismini gösteriyoruz.
-            const opponent = db.belirleyen === "Ömer" ? "Begüm" : "Ömer";
-            wHint.innerText = isGuesser ? "Hadi çöz!" : `${opponent} kelimeni çözmeye çalışıyor...`;
+            const opponent = switchUser(ui.setter);
+            wHint.innerText = isGuesser ? (wordleWaiting ? "Tahmin gönderildi, güncelleme bekleniyor..." : "Hadi çöz!") : `${opponent} kelimeni çözmeye çalışıyor...`;
             
             const board = document.getElementById('w-board'); board.innerHTML = "";
-            const guesses = JSON.parse(db.tahminler || "[]");
+            const guesses = ui.guesses;
             for(let i=0; i<6; i++) {
                 const row = document.createElement('div'); row.className = "w-row";
                 const g = guesses[i] || "";
-                for(let j=0; j<db.harf_sayisi; j++) {
+                const marks = g ? evaluateWordleGuess(ui.word, g) : [];
+                for(let j=0; j<ui.length; j++) {
                     const c = document.createElement('div'); c.className = "w-cell"; c.innerText = g[j] || "";
-                    if(g) {
-                        if(db.kelime[j] === g[j]) c.classList.add('correct');
-                        else if(db.kelime.includes(g[j])) c.classList.add('present');
-                        else c.classList.add('absent');
-                    }
+                    if(g) c.classList.add(marks[j] || 'absent');
                     row.appendChild(c);
                 }
                 board.appendChild(row);
@@ -259,25 +566,292 @@
     async function setWordle() {
         const v = document.getElementById('w-secret').value.trim().toLowerCase();
         if(v.length < 5 || v.length > 7) return alert("5-7 harf!");
-        await _supabase.from('wordle_durumu').update({ kelime: v, durum: 'belirlendi', harf_sayisi: v.length, tahminler: '[]' }).eq('id', 1);
+        const { error } = await updateRowWithDebug('wordle_durumu', { kelime: v, durum: 'belirlendi', harf_sayisi: v.length, tahminler: [] }, 1);
+        if (!error) await fetchWordleAndRender();
     }
     async function submitGuess() {
         const inp = document.getElementById('w-guess'); const g = inp.value.trim().toLowerCase();
         const { data: db } = await _supabase.from('wordle_durumu').select('*').eq('id', 1).single();
-        if(g.length !== db.harf_sayisi) return alert(`${db.harf_sayisi} harf gir!`);
-        let gs = JSON.parse(db.tahminler); gs.push(g); inp.value = "";
-        await _supabase.from('wordle_durumu').update({ tahminler: JSON.stringify(gs) }).eq('id', 1);
-        setTimeout(async () => {
-            if(g === db.kelime) {
-                fireConfetti(); const pts = [10, 9, 8, 7, 6, 5][gs.length-1] || 5;
-                alert(`Tebrikler! Kelime: ${db.kelime.toUpperCase()}\n+${pts} Puan aldın!`);
-                await _supabase.from('wordle_durumu').update({ durum:'bekliyor', kelime:null, tahminler:'[]', belirleyen:db.belirleyen==="Ömer"?"Begüm":"Ömer", [loggedInUser==="Ömer"?"omer_toplam_puan":"begum_toplam_puan"]: (loggedInUser==="Ömer"?db.omer_toplam_puan:db.begum_toplam_puan)+pts }).eq('id', 1);
-            } else if(gs.length >= 6) {
-                alert(`Bilemedin! Doğru Kelime: ${db.kelime.toUpperCase()}\n${db.belirleyen} +5 Puan kazandı!`);
-                await _supabase.from('wordle_durumu').update({ durum:'bekliyor', kelime:null, tahminler:'[]', belirleyen:db.belirleyen==="Ömer"?"Begüm":"Ömer", [db.belirleyen==="Ömer"?"omer_toplam_puan":"begum_toplam_puan"]: (db.belirleyen==="Ömer"?db.omer_toplam_puan:db.begum_toplam_puan)+5 }).eq('id', 1);
+        const ui = DataAdapters.wordle(db);
+        if(ui.setter === loggedInUser) return;
+        if(g.length !== ui.length) return alert(`${ui.length} harf gir!`);
+        let gs = ui.guesses.slice(); gs.push(g); inp.value = "";
+        wordleWaiting = true;
+        document.getElementById('w-hint').innerText = "Tahmin gönderildi, güncelleme bekleniyor...";
+        setWordleInputState(true);
+        const { error: updateError } = await updateRowWithDebug('wordle_durumu', { tahminler: gs }, 1);
+        if (updateError) {
+            wordleWaiting = false;
+            setWordleInputState(false);
+            document.getElementById('w-hint').innerText = 'Tahmin gönderimi başarısız oldu, tekrar dene.';
+            return;
+        }
+        await fetchWordleAndRender();
+
+        if(g === ui.word) {
+            fireConfetti();
+            const pts = [10, 9, 8, 7, 6, 5][gs.length-1] || 5;
+            const summary = {
+                oyun: 'wordle',
+                sonuc: 'tahminci_kazandi',
+                kelime: ui.word,
+                tahmin_sayisi: gs.length,
+                tahminler: gs,
+                tahminci: loggedInUser,
+                belirleyen: ui.setter,
+                puan: pts,
+                tarih: new Date().toISOString()
+            };
+            const { error: roundError } = await updateRowWithDebug('wordle_durumu', { durum:'bekliyor', kelime:null, tahminler:[], belirleyen:switchUser(ui.setter), son_tur_ozeti: summary, [loggedInUser==="Ömer"?"omer_toplam_puan":"begum_toplam_puan"]: (loggedInUser==="Ömer"?ui.omerScore:ui.begumScore)+pts }, 1);
+            if (roundError) {
+                wordleWaiting = false;
+                setWordleInputState(false);
+                document.getElementById('w-hint').innerText = 'Tur kapatma başarısız oldu, tekrar dene.';
+                return;
             }
-        }, 600);
+            await fetchWordleAndRender();
+            showTransientMessage('w-feedback', 'wordle', `Tebrikler! Kelime: ${ui.word.toUpperCase()} | +${pts} Puan`, 2000);
+            alert(`Tebrikler! Kelime: ${ui.word.toUpperCase()} | +${pts} puan`);
+            return;
+        }
+
+        if(gs.length >= 6) {
+            const summary = {
+                oyun: 'wordle',
+                sonuc: 'belirleyen_kazandi',
+                kelime: ui.word,
+                tahmin_sayisi: gs.length,
+                tahminler: gs,
+                tahminci: loggedInUser,
+                belirleyen: ui.setter,
+                puan: 5,
+                tarih: new Date().toISOString()
+            };
+            const { error: roundError } = await updateRowWithDebug('wordle_durumu', { durum:'bekliyor', kelime:null, tahminler:[], belirleyen:switchUser(ui.setter), son_tur_ozeti: summary, [ui.setter==="Ömer"?"omer_toplam_puan":"begum_toplam_puan"]: (ui.setter==="Ömer"?ui.omerScore:ui.begumScore)+5 }, 1);
+            if (roundError) {
+                wordleWaiting = false;
+                setWordleInputState(false);
+                document.getElementById('w-hint').innerText = 'Tur kapatma başarısız oldu, tekrar dene.';
+                return;
+            }
+            await fetchWordleAndRender();
+            showTransientMessage('w-feedback', 'wordle', `Bilemedin! Dogru kelime: ${ui.word.toUpperCase()} | ${ui.setter} +5`, 2000);
+            alert(`Bilemedin! Dogru kelime: ${ui.word.toUpperCase()} | ${ui.setter} +5 puan`);
+        }
     }
+
+    async function initHangman() {
+        const { data } = await _supabase.from('adam_asmaca_durumu').select('*').eq('id', 1).single();
+        renderHangman(data);
+        _supabase.channel('hangman').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'adam_asmaca_durumu' }, payload => {
+            if (payload?.new) renderHangman(payload.new);
+        }).subscribe();
+    }
+
+    function renderHangman(db) {
+        const ui = DataAdapters.hangman(db);
+        hangmanWaiting = false;
+        document.getElementById('h-b').innerText = ui.begumScore;
+        document.getElementById('h-o').innerText = ui.omerScore;
+        const hHint = document.getElementById('h-hint');
+        const hSetup = document.getElementById('h-setup');
+        const hPlay = document.getElementById('h-play');
+        const hInput = document.getElementById('h-guess');
+        const hBtn = document.getElementById('h-submit-btn');
+
+        if (ui.status === 'bekliyor') {
+            const isSetter = ui.setter === loggedInUser;
+            hSetup.style.display = isSetter ? 'block' : 'none';
+            hPlay.style.display = 'none';
+            hHint.innerText = isSetter ? 'Sıra sende! Kelime ve ipucu belirle.' : `${ui.setter} yeni turu hazırlıyor...`;
+            return;
+        }
+
+        hSetup.style.display = 'none';
+        hPlay.style.display = 'flex';
+        const isGuesser = ui.setter !== loggedInUser;
+        document.getElementById('h-input-area').style.display = isGuesser ? 'block' : 'none';
+        setHangmanInputState(!isGuesser || hangmanWaiting);
+        const opponent = switchUser(ui.setter);
+        if (isGuesser) {
+            document.getElementById('h-hint').innerText = hangmanWaiting ? 'Tahmin gönderildi, güncelleme bekleniyor...' : `İpucu: ${ui.clue || '-'}`;
+        } else {
+            document.getElementById('h-hint').innerText = `${opponent} tahmin etmeye çalışıyor...`;
+        }
+
+        const wrongCount = ui.wrongLetters.length;
+        for (let i = 1; i <= 6; i++) {
+            document.getElementById(`h-part-${i}`).classList.toggle('on', i <= wrongCount);
+        }
+
+        const board = document.getElementById('h-board');
+        board.innerHTML = '';
+        ui.word.split('').forEach(ch => {
+            if (ch === ' ') {
+                const gap = document.createElement('div');
+                gap.className = 'h-gap';
+                board.appendChild(gap);
+                return;
+            }
+            const cell = document.createElement('div');
+            cell.className = 'w-cell h-cell';
+            if (!/[a-zA-ZığüşöçİĞÜŞÖÇ]/.test(ch) || ui.correctLetters.includes(ch)) {
+                cell.innerText = ch.toUpperCase();
+            } else {
+                cell.innerText = '';
+            }
+            board.appendChild(cell);
+        });
+        const lives = Math.max(0, 6 - wrongCount);
+        document.getElementById('h-used').innerText = `Yanlış harfler: ${ui.wrongLetters.join(', ') || '-'} | Can: ${lives}`;
+    }
+
+    async function setHangman() {
+        const word = document.getElementById('h-secret').value.trim().toLowerCase();
+        const clue = document.getElementById('h-clue').value.trim();
+        if (word.length < 3 || word.length > 50) return alert('Kelime/cumle 3-50 karakter olmalı.');
+        if (!clue) return alert('İpucu gerekli.');
+        const { error } = await updateRowWithDebug('adam_asmaca_durumu', { kelime: word, ipucu: clue, durum: 'belirlendi', yanlis_harfler: [], dogru_harfler: [' '] }, 1);
+        if (!error) await fetchHangmanAndRender();
+    }
+
+    async function submitHangmanGuess() {
+        const inp = document.getElementById('h-guess');
+        const letter = inp.value.trim().toLowerCase();
+        inp.value = '';
+        if (!letter || !/^[a-zA-ZığüşöçİĞÜŞÖÇ]$/.test(letter)) return alert('Tek bir harf gir.');
+
+        const { data: db } = await _supabase.from('adam_asmaca_durumu').select('*').eq('id', 1).single();
+        const ui = DataAdapters.hangman(db);
+        if (ui.setter === loggedInUser || ui.status !== 'belirlendi') return;
+        if (ui.correctLetters.includes(letter) || ui.wrongLetters.includes(letter)) return;
+        hangmanWaiting = true;
+        setHangmanInputState(true);
+        document.getElementById('h-hint').innerText = 'Tahmin gönderildi, güncelleme bekleniyor...';
+
+        let correctLetters = ui.correctLetters.slice();
+        let wrongLetters = ui.wrongLetters.slice();
+        let begumScore = ui.begumScore;
+        let omerScore = ui.omerScore;
+        const setter = ui.setter;
+
+        if (ui.word.includes(letter)) {
+            correctLetters.push(letter);
+            const solved = ui.word.split('').every(ch => {
+                if (!/[a-zA-ZığüşöçİĞÜŞÖÇ]/.test(ch)) return true;
+                return correctLetters.includes(ch);
+            });
+
+            if (solved) {
+                const lives = Math.max(0, 6 - wrongLetters.length);
+                const pts = lives * 3;
+                if (loggedInUser === 'Ömer') omerScore += pts;
+                else begumScore += pts;
+                const summary = {
+                    oyun: 'adam_asmaca',
+                    sonuc: 'tahminci_kazandi',
+                    kelime: ui.word,
+                    ipucu: ui.clue,
+                    yanlis_harfler: wrongLetters,
+                    tahminci: loggedInUser,
+                    belirleyen: setter,
+                    kalan_can: lives,
+                    puan: pts,
+                    tarih: new Date().toISOString()
+                };
+                const { error: finishError } = await resetHangmanRoundAtomic(
+                    switchUser(setter),
+                    { begum: begumScore, omer: omerScore },
+                    summary
+                );
+                if (finishError) {
+                    hangmanWaiting = false;
+                    setHangmanInputState(false);
+                    document.getElementById('h-hint').innerText = `İpucu: ${ui.clue || '-'}`;
+                    return;
+                }
+                await fetchHangmanAndRender();
+                fireConfetti();
+                showTransientMessage('h-feedback', 'hangman', `Tebrikler! +${pts} puan`, 2000);
+                alert(`Tebrikler! +${pts} puan`);
+                return;
+            }
+            const { error: okError } = await updateRowWithDebug('adam_asmaca_durumu', { dogru_harfler: correctLetters }, 1);
+            if (okError) {
+                hangmanWaiting = false;
+                setHangmanInputState(false);
+                document.getElementById('h-hint').innerText = `İpucu: ${ui.clue || '-'}`;
+                return;
+            }
+            await fetchHangmanAndRender();
+            return;
+        }
+
+        wrongLetters.push(letter);
+        if (wrongLetters.length >= 6) {
+            if (setter === 'Ömer') omerScore += 5;
+            else begumScore += 5;
+            const summary = {
+                oyun: 'adam_asmaca',
+                sonuc: 'belirleyen_kazandi',
+                kelime: ui.word,
+                ipucu: ui.clue,
+                yanlis_harfler: wrongLetters,
+                tahminci: loggedInUser,
+                belirleyen: setter,
+                puan: 5,
+                tarih: new Date().toISOString()
+            };
+            const { error: finishError } = await resetHangmanRoundAtomic(
+                switchUser(setter),
+                { begum: begumScore, omer: omerScore },
+                summary
+            );
+            if (finishError) {
+                hangmanWaiting = false;
+                setHangmanInputState(false);
+                document.getElementById('h-hint').innerText = `İpucu: ${ui.clue || '-'}`;
+                return;
+            }
+            await fetchHangmanAndRender();
+            showTransientMessage('h-feedback', 'hangman', `Tur bitti. Dogru kelime: ${ui.word.toUpperCase()} | ${setter} +5`, 2000);
+            alert(`Tur bitti. Dogru kelime: ${ui.word.toUpperCase()} | ${setter} +5 puan`);
+            return;
+        }
+
+        const { error: wrongError } = await updateRowWithDebug('adam_asmaca_durumu', { yanlis_harfler: wrongLetters }, 1);
+        if (wrongError) {
+            hangmanWaiting = false;
+            setHangmanInputState(false);
+            document.getElementById('h-hint').innerText = `İpucu: ${ui.clue || '-'}`;
+            return;
+        }
+        await fetchHangmanAndRender();
+    }
+
+    async function openRoundSummary(game) {
+        const gameMap = {
+            wordle: { table: 'wordle_durumu', title: 'Wordle Geçmiş Tur' },
+            hangman: { table: 'adam_asmaca_durumu', title: 'Adam Asmaca Geçmiş Tur' }
+        };
+        const conf = gameMap[game];
+        if (!conf) return;
+        const { data } = await _supabase.from(conf.table).select('son_tur_ozeti').eq('id', 1).single();
+        document.getElementById('round-modal-title').innerText = conf.title;
+        const summary = typeof data?.son_tur_ozeti === 'string'
+            ? parseJsonField(data.son_tur_ozeti, null)
+            : data?.son_tur_ozeti;
+        if (!summary) {
+            document.getElementById('round-summary-content').innerHTML = '<div class="summary-line">Henuz tamamlanan bir tur ozeti bulunmuyor.</div>';
+        } else if (game === 'wordle') {
+            document.getElementById('round-summary-content').innerHTML = renderWordleSummary(summary);
+        } else {
+            document.getElementById('round-summary-content').innerHTML = renderHangmanSummary(summary);
+        }
+        document.getElementById('round-modal').style.display = 'flex';
+    }
+
+    function closeRoundModal() { document.getElementById('round-modal').style.display = 'none'; }
 
     async function openHistory(weekId) {
         document.getElementById('history-modal').style.display = 'flex';
@@ -294,7 +868,7 @@
         if(!v) return;
         const res = await (await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${v}`)).json();
         const { data: recs } = await _supabase.from('skor_verileri').select('id').order('id', { ascending: false }).limit(1);
-        await _supabase.from('skor_verileri').update({ haftanin_notu: n, sarki_adi: res.title, sarki_linki: v }).eq('id', recs[0].id);
+        await updateRowWithDebug('skor_verileri', { haftanin_notu: n, sarki_adi: res.title, sarki_linki: v }, recs[0].id);
         await _supabase.from('sarki_gecmisi').insert([{ week_id: recs[0].id, sarki_adi: res.title, sarki_linki: v }]);
         location.reload();
     }
