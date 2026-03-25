@@ -6,22 +6,50 @@
     <title>📱 Skor Tablosu</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <style>
         :root { --bg-color: #FDF2F8; --card-bg: #FFFFFF; --text-main: #303A2B; --accent: #FF99C9; --periwinkle: #C1BDDB; --winner: #58FCEC; --record: #FFD700; --border: #FCE7F3; }
         * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: #2D1B24; color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; min-height: 100vh; }
         
         /* GİRİŞ EKRANI */
-        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 85vh; width: 100%; }
-        .login-card { background: var(--card-bg); padding: 30px; border-radius: 24px; text-align: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 95%; max-width: 350px; }
+        #login-screen { display: flex; align-items: center; justify-content: center; min-height: 85vh; width: 100%; }
+        .login-layout { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; width: 100%; max-width: 760px; }
+        .lamp-side { position: relative; width: 220px; height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; transform-origin: top center; }
+        .lamp-glow { position: absolute; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 191, 212, 0.55) 0%, rgba(255, 191, 212, 0.24) 35%, rgba(255, 191, 212, 0.06) 55%, rgba(255, 191, 212, 0) 78%); filter: blur(10px); opacity: 0; pointer-events: none; }
+        .lamp-svg { width: 140px; height: 180px; z-index: 1; }
+        .lamp-svg .lamp-base { fill: #b7bac4; }
+        .lamp-svg .lamp-post { fill: #d2d6df; }
+        .lamp-svg .lamp-head { fill: #9ea4b3; transition: fill 0.45s ease; transform-origin: 50% 28%; }
+        .lamp-svg.on .lamp-head { fill: #ffd7ea; }
+        .pull-string-svg { position: absolute; left: 138px; top: 54px; width: 46px; height: 132px; cursor: pointer; z-index: 3; overflow: visible; transform-origin: 10px 0px; }
+        .pull-string-svg:focus,
+        .pull-string-svg:active,
+        .pull-string-svg:hover,
+        .pull-string-svg:focus-visible { outline: none; }
+        .pull-path { fill: none; stroke: #b9a8b1; stroke-width: 2.2; stroke-linecap: round; }
+        .pull-chain { fill: #c5c7d0; opacity: 0.95; }
+        .pull-bead { fill: #f6c65a; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.35)); }
+        .login-card { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(14px) saturate(115%); -webkit-backdrop-filter: blur(14px) saturate(115%); padding: 30px; border-radius: 24px; text-align: center; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 45px rgba(14,8,12,0.32); width: 95%; max-width: 360px; opacity: 0.4; pointer-events: none; transform: translateY(8px) scale(0.97); transition: all 0.45s ease; }
+        .login-card.active { background: var(--card-bg); border: 1px solid rgba(252,231,243,0.95); box-shadow: 0 16px 34px rgba(102, 45, 72, 0.16); opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
         input { padding: 12px; margin: 8px 0; border: 2px solid var(--border); border-radius: 12px; width: 100%; outline: none; }
         .login-btn { padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+        #login-screen .login-btn { background: linear-gradient(180deg, #ffbfdd 0%, var(--accent) 55%, #f472b6 100%); color: #4a1632; box-shadow: 0 8px 18px rgba(255, 153, 201, 0.35); }
+        #login-screen .login-card.active .login-btn { background: linear-gradient(180deg, #ffd0e8 0%, #ff99c9 48%, #fb6faf 100%); box-shadow: 0 10px 20px rgba(255, 111, 175, 0.35); }
+        @media (max-width: 560px) {
+            .login-layout { gap: 14px; }
+            .lamp-side { width: 170px; height: 240px; }
+            .lamp-svg { width: 110px; height: 145px; }
+            .pull-string-svg { width: 40px; height: 114px; left: 106px; top: 50px; }
+        }
 
         #kpss-box { background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; margin-bottom: 15px; width: 100%; max-width: 550px; cursor: pointer; text-align: center; display: none; }
         #kpss-content { font-size: 0.9rem; font-weight: 600; color: #86198F; }
 
         /* ANA TABLO KONTEYNERI */
         .container { background: var(--card-bg); padding: 25px; border-radius: 30px; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; margin-bottom: 20px; display: none; }
+        .container-head { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+        .logout-btn { width: auto; padding: 8px 14px; border-radius: 10px; background: #f43f5e; color: #fff; border: none; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
         .progress-container { width: 100%; height: 12px; background: #eee; border-radius: 10px; margin: 15px 0; overflow: hidden; display: flex; }
         #bar-begum { height: 100%; background: var(--accent); transition: 0.5s; }
         #bar-omer { height: 100%; background: var(--periwinkle); transition: 0.5s; }
@@ -70,9 +98,19 @@
         .summary-wrap { text-align: left; display: flex; flex-direction: column; gap: 10px; }
         .summary-title { font-size: 0.85rem; color: #475569; font-weight: 700; }
         .summary-wordle-grid { display: flex; flex-direction: column; gap: 6px; }
-        .summary-wordle-row { display: flex; gap: 6px; justify-content: center; }
+        .summary-wordle-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
         .summary-cell { width: 28px; height: 28px; border: 2px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; }
+        .summary-gap { width: 10px; height: 28px; }
         .summary-line { font-size: 0.85rem; color: #334155; }
+        .remember-row { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin: 6px 0 10px; font-size: 0.85rem; color: #475569; }
+        .remember-row input { width: auto; margin: 0; }
+        .virtual-keyboard { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; width: 100%; }
+        .vk-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+        .vk-btn { min-width: 30px; height: 36px; border: none; border-radius: 10px; font-size: 0.8rem; font-weight: 800; padding: 0 8px; cursor: pointer; background: #e2e8f0; color: #334155; }
+        .vk-btn.inactive { background: #e2e8f0; color: #475569; }
+        .vk-btn.present { background: #c9b458; color: #fff; }
+        .vk-btn.correct { background: #6aaa64; color: #fff; }
+        .vk-btn.absent { background: #787c7e; color: #fff; }
 
         /* ADMIN PANELİ */
         #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); text-align: left; }
@@ -89,12 +127,37 @@
 <body>
 
 <div id="login-screen">
-    <div class="login-card"><h2>🔒 Giriş</h2><input type="text" id="user" placeholder="İsim"><input type="password" id="pass" placeholder="Şifre"><button class="login-btn" onclick="checkLogin()">Giriş Yap</button></div>
+    <div class="login-layout">
+        <div class="lamp-side">
+            <div class="lamp-glow" id="lamp-glow"></div>
+            <svg class="lamp-svg" id="lamp-svg" viewBox="0 0 120 180" aria-label="Interaktif Lamba">
+                <ellipse class="lamp-base" cx="60" cy="168" rx="36" ry="8"></ellipse>
+                <rect class="lamp-post" x="54" y="66" width="12" height="98" rx="6"></rect>
+                <path class="lamp-head" d="M28 60c2-22 16-36 32-36s30 14 32 36H28z"></path>
+                <rect class="lamp-post" x="34" y="58" width="52" height="6" rx="3"></rect>
+            </svg>
+            <svg class="pull-string-svg" id="pull-string" viewBox="0 0 46 132" role="button" tabindex="0" aria-label="Lambayı aç kapa" onclick="toggleLamp()" onkeydown="if(event.key==='Enter' || event.key===' '){ event.preventDefault(); toggleLamp(); }">
+                <circle class="pull-chain" cx="12" cy="8" r="2.2"></circle>
+                <circle class="pull-chain" cx="12" cy="14" r="2.1"></circle>
+                <circle class="pull-chain" cx="12" cy="20" r="2"></circle>
+                <path id="pull-path" class="pull-path" d="M12 22 C12 42 12 70 12 98"></path>
+                <circle id="pull-bead" class="pull-bead" cx="12" cy="106" r="5"></circle>
+            </svg>
+        </div>
+        <div class="login-card" id="login-card">
+            <h2>🔒 Giriş</h2>
+            <input type="text" id="user" placeholder="İsim">
+            <input type="password" id="pass" placeholder="Şifre">
+            <label class="remember-row"><input type="checkbox" id="remember-me">Beni Hatırla</label>
+            <button class="login-btn" id="login-submit" onclick="checkLogin()">Giriş Yap</button>
+        </div>
+    </div>
 </div>
 
 <div id="kpss-box" onclick="showNextFact()"><div id="kpss-content">Yükleniyor...</div></div>
 
 <div class="container" id="main-site">
+    <div class="container-head"><button class="logout-btn" onclick="logout()">Çıkış Yap</button></div>
     <div class="total-card"><div>Begüm <br><span id="total-begum" class="total-val" style="color:var(--accent)">--:--</span></div><div style="width: 1px; background: var(--border);"></div><div>Ömer <br><span id="total-omer" class="total-val" style="color:var(--periwinkle)">--:--</span></div></div>
     <div class="progress-container"><div id="bar-begum"></div><div id="bar-omer"></div></div>
     <div class="table-wrapper"><table><thead><tr><th>Hafta</th><th>Begüm</th><th>Ömer</th><th>🎵 Şarkı</th></tr></thead><tbody id="table-body"></tbody></table></div>
@@ -130,16 +193,17 @@
     <p id="w-hint" style="font-size:0.95rem; font-weight:600; color:#64748b; margin:15px 0;"></p>
     
     <div id="w-setup" style="display:none">
-        <input type="text" id="w-secret" placeholder="5-7 harfli kelime.." maxlength="7" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:8px;">
+        <input type="text" id="w-secret" placeholder="5-6 harfli kelime.." maxlength="6" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:8px;">
         <button class="login-btn" onclick="setWordle()" style="margin-top:10px">Kilitle</button>
     </div>
     
     <div id="w-play" style="display:none">
         <div id="w-board" class="w-grid"></div>
         <div id="w-input-area">
-            <input type="text" id="w-guess" maxlength="7" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:10px; width:70%;" onkeyup="if(event.key==='Enter') submitGuess()">
+            <input type="text" id="w-guess" maxlength="6" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:10px; width:70%;" onkeyup="if(event.key==='Enter') submitGuess()">
             <button id="w-submit-btn" class="login-btn" onclick="submitGuess()" style="width:70%; margin-top:5px;">Tahmin Et</button>
         </div>
+        <div id="w-keyboard" class="virtual-keyboard"></div>
     </div>
     <p id="w-feedback" class="feedback-text"></p>
     <button class="login-btn round-btn" onclick="openRoundSummary('wordle')">Geçmiş Tur</button>
@@ -178,12 +242,13 @@
             <input type="text" id="h-guess" maxlength="1" placeholder="Harf" style="text-align:center; border:2px solid var(--border); border-radius:10px; padding:10px; width:70%; text-transform:lowercase;" onkeyup="if(event.key==='Enter') submitHangmanGuess()">
             <button id="h-submit-btn" class="login-btn" onclick="submitHangmanGuess()" style="width:70%; margin-top:5px;">Harf Tahmin Et</button>
         </div>
+        <div id="h-keyboard" class="virtual-keyboard"></div>
     </div>
     <button class="login-btn round-btn" onclick="openRoundSummary('hangman')">Geçmiş Tur</button>
 </div>
 
 <div id="history-modal"><div class="modal-content"><h3 style="margin-top:0">🎵 Arşiv</h3><div id="history-list" style="max-height:250px; overflow-y:auto;"></div><button class="login-btn" onclick="closeModal()" style="margin-top:15px">Kapat</button></div></div>
-<div id="round-modal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;"><div class="modal-content"><h3 id="round-modal-title" style="margin-top:0">Geçmiş Tur</h3><div id="round-summary-content" style="text-align:left; max-height:320px; overflow:auto; background:#f8fafc; border-radius:10px; padding:10px; font-size:0.8rem;"></div><button class="login-btn" onclick="closeRoundModal()" style="margin-top:15px">Kapat</button></div></div>
+<div id="round-modal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;"><div class="modal-content"><h3 id="round-modal-title" style="margin-top:0">Geçmiş Tur</h3><div id="round-summary-content" style="text-align:left; max-height:320px; overflow-y:auto; overflow-x:hidden; border-radius:10px; padding:10px; font-size:0.8rem;"></div><button class="login-btn" onclick="closeRoundModal()" style="margin-top:15px">Kapat</button></div></div>
 <div class="music-bar" id="music-player"><div id="youtube-container"></div></div>
 
 <script>
@@ -192,6 +257,12 @@
     const SB_URL = "https://yczoplqskmrolpbdbsnp.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inljem9wbHFza21yb2xwYmRic25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDQ3ODAsImV4cCI6MjA4NjU4MDc4MH0.hmEnEHugyTU6gLkFHJ9qsMVKETWCI6YN24SShfol6sc";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
+    const REMEMBER_KEY = 'scoreboardRememberedUser';
+    const TURKISH_KEYBOARD_ROWS = [
+        ['Q','W','E','R','T','Y','U','I','O','P','Ğ','Ü'],
+        ['A','S','D','F','G','H','J','K','L','Ş','İ'],
+        ['Z','X','C','V','B','N','M','Ö','Ç']
+    ];
     const EMPTY_XOX_BOARD = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
     const XOX_TRIPLES = buildXOXTriples();
     const DataAdapters = {
@@ -237,6 +308,11 @@
     let hangmanWaiting = false;
     let wordleMessageTimer = null;
     let hangmanMessageTimer = null;
+    let isLampOn = false;
+    const STRING_PATH_IDLE = 'M12 22 C12 42 12 70 12 98';
+    const STRING_PATH_PULL = 'M12 22 C13 50 13 86 12 112';
+    const STRING_PATH_SWAY_RIGHT = 'M12 22 C19 45 24 74 19 100';
+    const STRING_PATH_SWAY_LEFT = 'M12 22 C6 45 1 74 6 100';
 
     function parseJsonField(value, fallback) {
         if (value === null || value === undefined) return fallback;
@@ -296,6 +372,159 @@
 
     function switchUser(user) {
         return user === "Ömer" ? "Begüm" : "Ömer";
+    }
+
+    function normalizeTrLower(ch) {
+        return (ch || '').toLocaleLowerCase('tr-TR');
+    }
+
+    function setRememberedLogin(user, pass, remember) {
+        if (!remember) {
+            localStorage.removeItem(REMEMBER_KEY);
+            return;
+        }
+        localStorage.setItem(REMEMBER_KEY, JSON.stringify({ user, pass }));
+    }
+
+    function setLoginCardActive(active) {
+        const card = document.getElementById('login-card');
+        if (!card) return;
+        card.classList.toggle('active', active);
+    }
+
+    function animatePullString() {
+        const pathEl = document.getElementById('pull-path');
+        const beadEl = document.getElementById('pull-bead');
+                const stringWrap = document.getElementById('pull-string');
+        if (!pathEl || !beadEl || typeof gsap === 'undefined') return;
+                gsap.killTweensOf([pathEl, beadEl, stringWrap]);
+        const tl = gsap.timeline();
+                if (stringWrap) {
+                        tl.to(stringWrap, { rotation: 8, duration: 0.11, ease: 'power2.out' });
+                }
+        tl.to(pathEl, { attr: { d: STRING_PATH_PULL }, duration: 0.14, ease: 'power2.in' })
+                    .to(beadEl, { attr: { cy: 120, cx: 13 }, duration: 0.14, ease: 'power2.in' }, '<')
+                    .to(pathEl, { attr: { d: STRING_PATH_SWAY_RIGHT }, duration: 0.28, ease: 'elastic.out(1,0.45)' })
+                    .to(beadEl, { attr: { cx: 19, cy: 108 }, scaleX: 0.94, scaleY: 1.08, transformOrigin: '12px 106px', duration: 0.28, ease: 'elastic.out(1,0.45)' }, '<')
+                    .to(pathEl, { attr: { d: STRING_PATH_SWAY_LEFT }, duration: 0.24, ease: 'sine.inOut' })
+                    .to(beadEl, { attr: { cx: 5, cy: 106 }, scaleX: 1.03, scaleY: 0.98, duration: 0.24, ease: 'sine.inOut' }, '<')
+                    .to(pathEl, { attr: { d: STRING_PATH_IDLE }, duration: 0.3, ease: 'elastic.out(1,0.42)' })
+                    .to(beadEl, { attr: { cx: 12, cy: 106 }, scaleX: 1, scaleY: 1, duration: 0.3, ease: 'elastic.out(1,0.42)' }, '<');
+                if (stringWrap) {
+                        tl.to(stringWrap, { rotation: -5, duration: 0.16, ease: 'sine.inOut' }, '-=0.54')
+                            .to(stringWrap, { rotation: 2, duration: 0.2, ease: 'sine.inOut' })
+                            .to(stringWrap, { rotation: 0, duration: 0.24, ease: 'power2.out' });
+                }
+    }
+
+    function toggleLamp(forceState) {
+        isLampOn = typeof forceState === 'boolean' ? forceState : !isLampOn;
+        const lampSvg = document.getElementById('lamp-svg');
+        const glow = document.getElementById('lamp-glow');
+        const rootStyles = getComputedStyle(document.documentElement);
+        const targetBg = isLampOn
+            ? rootStyles.getPropertyValue('--bg-color').trim()
+            : '#2D1B24';
+
+        if (lampSvg) lampSvg.classList.toggle('on', isLampOn);
+        setLoginCardActive(isLampOn);
+
+        if (typeof gsap !== 'undefined') {
+            gsap.to('body', { backgroundColor: targetBg, duration: 0.8, ease: 'power2.out' });
+            if (glow) gsap.to(glow, { opacity: isLampOn ? 1 : 0, scale: isLampOn ? 1.08 : 0.88, duration: 0.8, ease: 'power2.out' });
+            animatePullString();
+        } else {
+            document.body.style.background = targetBg;
+            if (glow) glow.style.opacity = isLampOn ? '1' : '0';
+        }
+    }
+
+    function getRememberedLogin() {
+        const raw = localStorage.getItem(REMEMBER_KEY);
+        if (!raw) return null;
+        return parseJsonField(raw, null);
+    }
+
+    function buildWordleKeyboardState(ui) {
+        const state = {};
+        const priority = { inactive: 0, absent: 1, present: 2, correct: 3 };
+        ui.guesses.forEach(g => {
+            const marks = evaluateWordleGuess(ui.word, g);
+            g.split('').forEach((ch, i) => {
+                const key = normalizeTrLower(ch);
+                const mark = marks[i] || 'inactive';
+                const prev = state[key] || 'inactive';
+                state[key] = priority[mark] > priority[prev] ? mark : prev;
+            });
+        });
+        return state;
+    }
+
+    function buildHangmanKeyboardState(ui) {
+        const state = {};
+        ui.correctLetters.forEach(ch => {
+            const k = normalizeTrLower(ch);
+            if (k) state[k] = 'present';
+        });
+        ui.wrongLetters.forEach(ch => {
+            const k = normalizeTrLower(ch);
+            if (k) state[k] = 'absent';
+        });
+        return state;
+    }
+
+    function renderVirtualKeyboard(containerId, stateMap, onKeyPress) {
+        const root = document.getElementById(containerId);
+        if (!root) return;
+        root.innerHTML = '';
+        TURKISH_KEYBOARD_ROWS.forEach(row => {
+            const rowEl = document.createElement('div');
+            rowEl.className = 'vk-row';
+            row.forEach(letter => {
+                const key = normalizeTrLower(letter);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `vk-btn ${stateMap[key] || 'inactive'}`;
+                btn.innerText = letter;
+                btn.onclick = () => onKeyPress(key);
+                rowEl.appendChild(btn);
+            });
+            root.appendChild(rowEl);
+        });
+    }
+
+    function onWordleKeyboardPress(letter) {
+        const input = document.getElementById('w-guess');
+        if (!input || input.disabled) return;
+        const max = parseInt(input.maxLength || '6', 10);
+        if (input.value.length >= max) return;
+        input.value = normalizeTrLower(input.value + letter);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.focus();
+    }
+
+    function onHangmanKeyboardPress(letter) {
+        const input = document.getElementById('h-guess');
+        if (!input || input.disabled) return;
+        input.value = normalizeTrLower(letter);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.focus();
+    }
+
+    function logout() {
+        localStorage.removeItem(REMEMBER_KEY);
+        location.reload();
+    }
+
+    function activateSession(user) {
+        loggedInUser = user;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-site').style.display = 'block';
+        document.getElementById('game-tabs').style.display = 'flex';
+        document.getElementById('xox-panel').classList.add('active-panel');
+        document.getElementById('music-player').style.display = 'flex';
+        document.getElementById('kpss-box').style.display = 'block';
+        fetchStats(); initXOX(); initWordle(); initHangman();
     }
 
     function setWordleInputState(disabled) {
@@ -389,6 +618,9 @@
         const guesses = Array.isArray(safeSummary.tahminler)
             ? safeSummary.tahminler
             : parseJsonField(safeSummary.tahminler, []);
+        const winnerName = safeSummary.sonuc === 'tahminci_kazandi'
+            ? (safeSummary.tahminci || '-')
+            : (safeSummary.sonuc === 'belirleyen_kazandi' ? (safeSummary.belirleyen || '-') : '-');
         const rows = guesses.map(g => {
             const marks = evaluateWordleGuess(secret, g);
             const cells = g.split('').map((ch, i) => `<div class="summary-cell ${marks[i]}">${escapeHtml(ch)}</div>`).join('');
@@ -398,7 +630,7 @@
             <div class="summary-wrap">
                 <div class="summary-title">Wordle Son Tur</div>
                 <div class="summary-line">Kelime: <b>${escapeHtml((safeSummary.kelime || '').toUpperCase())}</b></div>
-                <div class="summary-line">Sonuc: ${escapeHtml(safeSummary.sonuc || '-')} | Puan: ${escapeHtml(safeSummary.puan || 0)}</div>
+                <div class="summary-line">Kazanan: <b>${escapeHtml(winnerName)}</b> | Puan: ${escapeHtml(safeSummary.puan || 0)}</div>
                 <div class="summary-wordle-grid">${rows || '<div class="summary-line">Tahmin kaydi yok.</div>'}</div>
             </div>
         `;
@@ -409,9 +641,12 @@
         const wrong = Array.isArray(safeSummary.yanlis_harfler)
             ? safeSummary.yanlis_harfler
             : parseJsonField(safeSummary.yanlis_harfler, []);
+        const winnerName = safeSummary.sonuc === 'tahminci_kazandi'
+            ? (safeSummary.tahminci || '-')
+            : (safeSummary.sonuc === 'belirleyen_kazandi' ? (safeSummary.belirleyen || '-') : '-');
         const word = (safeSummary.kelime || '').toUpperCase();
         const cells = word.split('').map(ch => {
-            if (ch === ' ') return '<div class="h-gap"></div>';
+            if (ch === ' ') return '<div class="summary-gap"></div>';
             return `<div class="summary-cell absent">${escapeHtml(ch)}</div>`;
         }).join('');
         return `
@@ -420,7 +655,7 @@
                 <div class="summary-line">Kelime: <b>${escapeHtml((safeSummary.kelime || '').toUpperCase())}</b></div>
                 <div class="summary-line">Ipucu: ${escapeHtml(safeSummary.ipucu || '-')}</div>
                 <div class="summary-line">Yanlis Harfler: ${escapeHtml(wrong.join(', ') || '-')}</div>
-                <div class="summary-line">Sonuc: ${escapeHtml(safeSummary.sonuc || '-')} | Puan: ${escapeHtml(safeSummary.puan || 0)}</div>
+                <div class="summary-line">Kazanan: <b>${escapeHtml(winnerName)}</b> | Puan: ${escapeHtml(safeSummary.puan || 0)}</div>
                 <div class="summary-wordle-row">${cells}</div>
             </div>
         `;
@@ -437,17 +672,16 @@
     setInterval(showNextFact, 15000);
 
     async function checkLogin() {
+        if (!isLampOn) {
+            alert('Önce lambayı açarak giriş kartını etkinleştir.');
+            return;
+        }
         const u = document.getElementById('user').value.trim();
         const p = document.getElementById('pass').value.trim();
+        const remember = document.getElementById('remember-me').checked;
         if((u === "Begüm" || u === "Ömer") && p === "1923#") {
-            loggedInUser = u;
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-site').style.display = 'block';
-            document.getElementById('game-tabs').style.display = 'flex';
-            document.getElementById('xox-panel').classList.add('active-panel');
-            document.getElementById('music-player').style.display = 'flex';
-            document.getElementById('kpss-box').style.display = 'block';
-            fetchStats(); initXOX(); initWordle(); initHangman();
+            setRememberedLogin(u, p, remember);
+            activateSession(u);
         } else { alert("Hatalı!"); }
     }
 
@@ -513,7 +747,8 @@
             let omerWins = ui.omerWins;
             if (roundBegum > roundOmer) begumWins += 1;
             if (roundOmer > roundBegum) omerWins += 1;
-            ups = { board: JSON.stringify(EMPTY_XOX_BOARD), turn: "Begüm", begum_wins: begumWins, omer_wins: omerWins };
+            const loserStarts = roundBegum > roundOmer ? "Ömer" : (roundOmer > roundBegum ? "Begüm" : "Begüm");
+            ups = { board: JSON.stringify(EMPTY_XOX_BOARD), turn: loserStarts, begum_wins: begumWins, omer_wins: omerWins };
         }
         await updateRowWithDebug('xox_durumu', ups, 1);
     }
@@ -561,11 +796,12 @@
                 }
                 board.appendChild(row);
             }
+            renderVirtualKeyboard('w-keyboard', buildWordleKeyboardState(ui), onWordleKeyboardPress);
         }
     }
     async function setWordle() {
         const v = document.getElementById('w-secret').value.trim().toLowerCase();
-        if(v.length < 5 || v.length > 7) return alert("5-7 harf!");
+        if(v.length < 5 || v.length > 6) return alert("Kelime 5 veya 6 harf olmalı!");
         const { error } = await updateRowWithDebug('wordle_durumu', { kelime: v, durum: 'belirlendi', harf_sayisi: v.length, tahminler: [] }, 1);
         if (!error) await fetchWordleAndRender();
     }
@@ -704,6 +940,7 @@
         });
         const lives = Math.max(0, 6 - wrongCount);
         document.getElementById('h-used').innerText = `Yanlış harfler: ${ui.wrongLetters.join(', ') || '-'} | Can: ${lives}`;
+        renderVirtualKeyboard('h-keyboard', buildHangmanKeyboardState(ui), onHangmanKeyboardPress);
     }
 
     async function setHangman() {
@@ -877,6 +1114,20 @@
     function toMinutes(v) { if(!v) return 0; const p = v.toString().split('.'); return (parseInt(p[0])*60) + (parseInt(p[1]||0)); }
     function formatTime(tm) { return `${Math.floor(tm/60)}s ${tm%60 < 10 ? '0'+(tm%60) : tm%60}dk`; }
     function fireConfetti() { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const remembered = getRememberedLogin();
+        if ((remembered?.user === 'Begüm' || remembered?.user === 'Ömer') && remembered?.pass === '1923#') {
+            const rememberCb = document.getElementById('remember-me');
+            if (rememberCb) rememberCb.checked = true;
+            setLoginCardActive(true);
+            isLampOn = true;
+            activateSession(remembered.user);
+            return;
+        }
+        setLoginCardActive(false);
+        toggleLamp(false);
+    });
 </script>
 </body>
 </html>
