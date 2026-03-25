@@ -445,6 +445,19 @@
         return parseJsonField(raw, null);
     }
 
+    function setBodyThemeImmediate(isLight) {
+        const rootStyles = getComputedStyle(document.documentElement);
+        const lightBg = rootStyles.getPropertyValue('--bg-color').trim() || '#FDF2F8';
+        const darkBg = '#2D1B24';
+        const target = isLight ? lightBg : darkBg;
+        if (typeof gsap !== 'undefined') gsap.killTweensOf('body');
+        document.body.style.background = target;
+        document.body.style.backgroundColor = target;
+        if (isLight) {
+            document.body.classList.remove('dark-mode');
+        }
+    }
+
     function buildWordleKeyboardState(ui) {
         const state = {};
         const priority = { inactive: 0, absent: 1, present: 2, correct: 3 };
@@ -1118,6 +1131,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const remembered = getRememberedLogin();
         if ((remembered?.user === 'Begüm' || remembered?.user === 'Ömer') && remembered?.pass === '1923#') {
+            setBodyThemeImmediate(true);
             const rememberCb = document.getElementById('remember-me');
             if (rememberCb) rememberCb.checked = true;
             setLoginCardActive(true);
@@ -1126,6 +1140,7 @@
             return;
         }
         setLoginCardActive(false);
+        setBodyThemeImmediate(false);
         toggleLamp(false);
     });
 </script>
