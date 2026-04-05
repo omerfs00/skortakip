@@ -8,8 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <style>
-        :root { --bg-color: #FDF2F8; --card-bg: #FFFFFF; --text-main: #303A2B; --accent: #FF99C9; --periwinkle: #C1BDDB; --winner: #58FCEC; --record: #FFD700; --border: #FCE7F3; }
-        * { box-sizing: border-box; }
+        :root { --bg-color: #FDF2F8; --card-bg: #FFFFFF; --text-main: #303A2B; --accent: #FF99C9; --secondary: #C1BDDB; --periwinkle: #C1BDDB; --winner: #58FCEC; --record: #FFD700; --border: #FCE7F3; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        button, a, input, select, textarea, [role="button"] { -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', sans-serif; background: #2D1B24; color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; min-height: 100vh; }
         
         /* GİRİŞ EKRANI */
@@ -41,13 +42,16 @@
             .lamp-side { width: 170px; height: 240px; }
             .lamp-svg { width: 110px; height: 145px; }
             .pull-string-svg { width: 40px; height: 114px; left: 106px; top: 50px; }
+            .bottom-nav-btn { font-size: 0.68rem; gap: 4px; padding: 9px 5px; }
+            .vk-btn { width: min(7.2vw, 30px); height: 34px; }
+            .spa-shell { padding-top: 96px; padding-bottom: 42px; }
         }
 
-        #kpss-box { background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; margin-bottom: 15px; width: 100%; max-width: 550px; cursor: pointer; text-align: center; display: none; }
+        #kpss-box { background: #FFF5F9; border: 2px solid var(--accent); padding: 18px; border-radius: 20px; margin: 0 auto 15px auto; width: 100%; max-width: 550px; cursor: pointer; text-align: center; display: none; }
         #kpss-content { font-size: 0.9rem; font-weight: 600; color: #86198F; }
 
         /* ANA TABLO KONTEYNERI */
-        .container { background: var(--card-bg); padding: 25px; border-radius: 30px; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; margin-bottom: 20px; display: none; }
+        .container { background: var(--card-bg); padding: 25px; border-radius: 30px; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; margin: 0 auto 20px auto; display: block; }
         .container-head { display: flex; justify-content: flex-end; margin-bottom: 8px; }
         .logout-btn { width: auto; padding: 8px 14px; border-radius: 10px; background: #f43f5e; color: #fff; border: none; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
         .progress-container { width: 100%; height: 12px; background: #eee; border-radius: 10px; margin: 15px 0; overflow: hidden; display: flex; }
@@ -67,31 +71,32 @@
         .winner-cell:hover .speech-bubble { visibility: visible; opacity: 1; }
 
         /* SEKMELER VE OYUNLAR */
-        .tab-nav { display: none; gap: 8px; margin: 10px auto; width: 100%; max-width: 550px; background: white; padding: 6px; border-radius: 20px; border: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 12px; border-radius: 15px; border: none; background: none; font-weight: bold; cursor: pointer; font-size: 0.85rem; color: #64748b; }
-        .tab-btn.active { background: var(--accent); color: white; }
+        .tab-nav { position: relative; display: flex; gap: 8px; margin: 10px auto; width: 100%; max-width: 650px; background: white; padding: 6px; border-radius: 20px; border: 1px solid var(--border); flex-wrap: nowrap; overflow: hidden; }
+        .tab-indicator { position: absolute; top: 6px; bottom: 6px; left: 6px; width: 80px; border-radius: 14px; background: var(--accent); transition: transform 0.3s ease-in-out, width 0.3s ease-in-out; z-index: 0; pointer-events: none; }
+        .tab-btn { flex: 1; padding: 12px; border-radius: 15px; border: none; background: none; font-weight: bold; cursor: pointer; font-size: 0.85rem; color: #64748b; position: relative; z-index: 1; transition: color 0.3s ease-in-out; }
+        .tab-btn.active { background: transparent; color: white; }
         
         /* ÖNEMLİ: Giriş yapana kadar gizli kalmasını sağlar */
         .game-panel { background: white; border-radius: 30px; padding: 25px; margin: 0 auto 180px auto; width: 100%; max-width: 550px; border: 1px solid var(--border); text-align: center; display: none !important; }
         .active-panel { display: block !important; }
 
         /* GRIDLER */
-        .xox-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 240px; margin: 0 auto; }
-        .xox-cell { background: #FFF5F9; border: 1px solid var(--border); height: 55px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 900; border-radius: 12px; cursor: pointer; }
+        .xox-grid { display: grid; grid-template-columns: repeat(4, minmax(45px, 1fr)); gap: 10px; width: min(92vw, 360px); margin: 0 auto; }
+        .xox-cell { background: #FFF5F9; border: 1px solid var(--border); min-height: 64px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; border-radius: 12px; cursor: pointer; }
         .w-grid { display: flex; flex-direction: column; gap: 6px; margin: 15px auto; }
         .w-row { display: flex; gap: 6px; justify-content: center; }
-        .w-cell { width: 42px; height: 42px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: 800; border-radius: 10px; font-size: 1.3rem; text-transform: uppercase; transition: 0.3s; }
+        .w-cell { width: clamp(42px, 9vw, 54px); height: clamp(42px, 9vw, 54px); border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: 800; border-radius: 10px; font-size: clamp(1.1rem, 3.8vw, 1.45rem); text-transform: uppercase; transition: 0.3s; }
         .correct { background: #6aaa64 !important; color: white !important; border-color: #6aaa64 !important; }
         .present { background: #c9b458 !important; color: white !important; border-color: #c9b458 !important; }
         .absent { background: #787c7e !important; color: white !important; border-color: #787c7e !important; }
         .subscore { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
         .round-btn { margin-top: 10px; width: 70%; }
-        .hangman-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .hangman-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
         .hangman-svg { width: 180px; height: 200px; }
         .hangman-part { stroke: #1f2937; stroke-width: 4; fill: none; opacity: 0.15; transition: opacity 0.25s ease; }
         .hangman-part.on { opacity: 1; }
         .h-board { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 100%; }
-        .h-cell { width: 34px; height: 42px; font-size: 1.1rem; }
+        .h-cell { width: clamp(34px, 8vw, 44px); height: clamp(42px, 10vw, 52px); font-size: clamp(1rem, 3.2vw, 1.2rem); }
         .h-gap { width: 20px; height: 42px; margin-right: 20px; }
         .letters-used { font-size: 0.9rem; color: #64748b; min-height: 20px; }
         .feedback-text { font-size: 0.9rem; font-weight: 700; color: #0f766e; min-height: 20px; }
@@ -105,12 +110,183 @@
         .remember-row { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin: 6px 0 10px; font-size: 0.85rem; color: #475569; }
         .remember-row input { width: auto; margin: 0; }
         .virtual-keyboard { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; width: 100%; }
-        .vk-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-        .vk-btn { min-width: 30px; height: 36px; border: none; border-radius: 10px; font-size: 0.8rem; font-weight: 800; padding: 0 8px; cursor: pointer; background: #e2e8f0; color: #334155; }
+        .vk-row { display: flex; justify-content: center; gap: 6px; width: 100%; }
+        .vk-row-2 { padding: 0; }
+        .vk-row-3 { padding: 0; }
+        .vk-btn { width: min(7.2vw, 34px); min-width: 26px; height: 36px; border: none; border-radius: 10px; font-size: 0.78rem; font-weight: 800; padding: 0; cursor: pointer; background: #e2e8f0; color: #334155; justify-self: center; }
         .vk-btn.inactive { background: #e2e8f0; color: #475569; }
         .vk-btn.present { background: #c9b458; color: #fff; }
         .vk-btn.correct { background: #6aaa64; color: #fff; }
         .vk-btn.absent { background: #787c7e; color: #fff; }
+        .spa-shell { display: none; width: 100%; max-width: 760px; margin: 0 auto; padding: 84px 8px 42px 8px; }
+        .spa-page { display: none; width: 100%; min-height: 72vh; padding-bottom: 36px; }
+        .spa-page.active-page { display: block; }
+        .decision-card, .settings-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 28px; padding: 24px; max-width: 550px; margin: 10px auto; text-align: center; }
+        .decision-title, .settings-title { font-size: 1rem; font-weight: 800; color: #334155; margin-bottom: 10px; }
+        .decision-row { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+        .decision-btn { width: 45%; }
+        .bottom-nav { position: fixed; left: 50%; transform: translateX(-50%); top: max(8px, env(safe-area-inset-top)); bottom: auto; width: min(92%, 620px); background: rgba(255,255,255,0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(252,231,243,0.9); border-radius: 999px; padding: 8px; display: flex; gap: 6px; z-index: 1200; overflow: hidden; }
+        .bottom-nav-btn { flex: 1; border: none; background: transparent; color: #64748b; border-radius: 999px; padding: 10px 8px; font-size: 0.77rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+        .bottom-nav-btn.active { background: var(--accent); color: #fff; box-shadow: 0 6px 16px rgba(255,153,201,0.35); }
+        .bottom-nav-indicator { position: absolute; top: 8px; bottom: 8px; left: 8px; width: 80px; border-radius: 999px; background: var(--accent); box-shadow: 0 6px 16px rgba(255,153,201,0.35); transition: transform 0.3s ease-in-out, width 0.3s ease-in-out; pointer-events: none; z-index: 0; }
+        .bottom-nav-btn { position: relative; z-index: 1; transition: color 0.3s ease-in-out; }
+        .bottom-nav-btn.active { background: transparent; box-shadow: none; }
+
+        .settings-grid { display: grid; gap: 14px; text-align: left; }
+        .palette-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .palette-btn { border: 2px solid var(--border); border-radius: 14px; padding: 10px; background: #fff; cursor: pointer; display: grid; gap: 8px; text-align: left; }
+        .palette-btn.active { border-color: var(--accent); box-shadow: 0 8px 18px rgba(148, 163, 184, 0.2); }
+        .palette-swatches { display: flex; gap: 6px; }
+        .palette-dot { width: 16px; height: 16px; border-radius: 999px; border: 1px solid rgba(15,23,42,0.08); }
+        .settings-preview { padding: 12px; border: 1px dashed var(--border); border-radius: 14px; background: #fff; }
+        .settings-preview-name { font-weight: 800; }
+        .palette-library { display: grid; gap: 10px; margin-top: 10px; }
+        .palette-card { border: 1px solid var(--border); border-radius: 14px; background: #fff; padding: 10px; cursor: pointer; display: grid; gap: 8px; }
+        .palette-card:hover { background: #fff8fc; }
+        .palette-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .palette-delete-btn { border: 1px solid #fecaca; background: #fff1f2; color: #b91c1c; border-radius: 8px; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; cursor: pointer; }
+        .palette-delete-btn:hover { background: #ffe4e6; }
+        .palette-card-title { font-weight: 800; color: #334155; }
+        .palette-card-meta { font-size: 0.75rem; color: #64748b; }
+        .palette-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .palette-strip span { height: 22px; border-radius: 8px; border: 1px solid rgba(15,23,42,0.1); }
+        .palette-modal { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.45); z-index:1300; align-items:center; justify-content:center; padding:14px; }
+        .palette-modal-card { width:min(96vw,680px); max-height:90vh; overflow-y:auto; background:#fff; border-radius:20px; border:1px solid var(--border); padding:16px; }
+        .palette-builder-grid { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:10px; margin-top:10px; }
+        .palette-builder-item { border:1px solid var(--border); border-radius:12px; padding:8px; background:#fff; display:grid; gap:6px; }
+        .palette-preview-swatch { height:72px; border-radius:10px; border:1px solid rgba(15,23,42,0.12); }
+        .palette-hex-input { width:100%; border:1px solid var(--border); border-radius:10px; padding:8px; font-size:0.78rem; text-transform:uppercase; font-family: Consolas, monospace; }
+        .palette-hex-input.invalid { border-color: #ef4444; box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25); }
+        .palette-toast { position: fixed; right: 14px; bottom: 18px; z-index: 1600; padding: 10px 12px; border-radius: 10px; background: #0f172a; color: #fff; font-size: 0.78rem; box-shadow: 0 10px 20px rgba(15,23,42,0.25); }
+
+        .decision-manage { display: grid; gap: 10px; text-align: left; margin-top: 14px; }
+        .decision-tabs { display: flex; gap: 8px; margin-top: 12px; }
+        .decision-tab-btn { flex: 1; border: 1px solid var(--border); border-radius: 12px; background: #fff; color: #475569; font-weight: 800; padding: 10px; cursor: pointer; }
+        .decision-tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .decision-panel-enter { animation: fadeSlideIn 240ms ease-in-out; }
+        .decision-manage-row { display: flex; gap: 8px; }
+        .decision-dropdown { position: relative; min-width: 220px; flex: 1; }
+        .decision-dropdown-btn { width: 100%; min-height: 44px; border: 1px solid var(--border); border-radius: 12px; background: #fff; color: #334155; font-weight: 700; text-align: left; padding: 10px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .decision-dropdown-menu { display: none; position: absolute; z-index: 10; top: calc(100% + 6px); left: 0; right: 0; max-height: 260px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; background: #fff; box-shadow: 0 10px 24px rgba(15,23,42,0.12); }
+        .decision-dropdown.open .decision-dropdown-menu { display: block; }
+        .decision-dropdown-item { width: 100%; border: none; background: #fff; text-align: left; padding: 10px 12px; font-size: 0.84rem; color: #334155; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .decision-dropdown-item:hover { background: #fff1f7; }
+        .decision-dropdown-item.active { background: #ffe4f1; color: #9d174d; font-weight: 800; }
+        .decision-approve-toggle { border: 1px solid #cbd5e1; background: #fff; color: #94a3b8; border-radius: 999px; width: 34px; height: 34px; cursor: pointer; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; }
+        .decision-approve-toggle.active { border-color: #22c55e; background: #dcfce7; color: #15803d; }
+        .decision-approve-toggle:disabled { opacity: 0.55; cursor: not-allowed; }
+        .decision-danger-btn { width: auto !important; min-width: 96px; background: #ef4444 !important; color: #fff !important; }
+        .decision-item-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .decision-item-del { border: 1px solid #fecaca; background: #fff1f2; color: #b91c1c; border-radius: 10px; font-weight: 800; cursor: pointer; min-width: 32px; height: 32px; }
+        .decision-mode-wrap { margin-top: 12px; border: 1px solid var(--border); border-radius: 16px; padding: 12px; background: #fff; text-align: left; display: grid; gap: 10px; }
+        .decision-create-modes { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 2px 0; }
+        .decision-create-mode { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 999px; padding: 6px 10px; background: #fff; font-size: 0.8rem; font-weight: 700; color: #334155; }
+        .decision-create-mode input { width: auto; margin: 0; }
+        .decision-mode-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .decision-chip { border: 1px solid var(--border); border-radius: 999px; background: #fff; color: #334155; padding: 8px 12px; font-weight: 700; cursor: pointer; }
+        .decision-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .decision-progress { font-size: 0.82rem; color: #64748b; font-weight: 700; }
+        .decision-judge-wrap { margin-top: 8px; border: 1px solid var(--border); border-radius: 16px; padding: 12px; background: #fff; text-align: center; }
+        .decision-judge-item { font-weight: 800; color: #334155; font-size: 1rem; margin-bottom: 10px; }
+        .decision-judge-actions { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .decision-big-btn { min-width: 84px; min-height: 44px; border: 1px solid var(--border); border-radius: 12px; background: #fff; cursor: pointer; font-weight: 800; font-size: 0.92rem; }
+        .decision-big-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .decision-slider { width: min(100%, 340px); }
+        .blind-slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+        .blind-slot { border: 1px solid var(--border); border-radius: 12px; background: #fff; min-height: 48px; font-weight: 800; cursor: pointer; }
+        .blind-slot.filled { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
+        .versus-wrap { display: grid; gap: 10px; }
+        .versus-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+        .versus-card { border: 1px solid var(--border); border-radius: 14px; background: #fff; padding: 12px; min-height: 72px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #334155; cursor: pointer; }
+        .champions-wrap { margin-top: 12px; border: 1px solid var(--border); border-radius: 16px; background: #fff; padding: 12px; text-align: left; }
+        .champion-item { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding: 8px 2px; font-size: 0.86rem; }
+        .champion-item:last-child { border-bottom: none; }
+        .decision-list { display: grid; gap: 8px; margin-top: 12px; text-align: left; }
+        .decision-item { border: 1px solid var(--border); border-radius: 14px; padding: 10px; background: #fff; }
+        .decision-item.clickable { cursor: pointer; }
+        .decision-item.clickable:hover { background: #fff8fc; }
+        .decision-votes { font-size: 0.8rem; color: #64748b; margin-top: 6px; }
+        .decision-loading { animation: pulseDecision 1s ease-in-out infinite; }
+        @keyframes pulseDecision {
+            0% { opacity: 0.55; }
+            50% { opacity: 1; }
+            100% { opacity: 0.55; }
+        }
+        .rating-wrap { margin-top: 16px; border: 1px solid var(--border); border-radius: 18px; padding: 12px; background: #fff; text-align: left; }
+        .rating-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+        .rating-btn { width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 10px; background: #fff; cursor: pointer; font-weight: 700; }
+        .rating-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .battleship-wrap { display: grid; gap: 14px; text-align: center; justify-items: center; width: 100%; max-width: min(100vw, 500px); margin: 0 auto; overflow-x: hidden; padding: 5px; box-sizing: border-box; }
+        .battleship-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .battleship-stat-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 8px; font-size: 0.82rem; }
+        .b-scoreboard { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; width: min(100%, 620px); background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 12px; }
+        .b-player-score { display: flex; align-items: baseline; gap: 8px; font-weight: 800; color: #334155; }
+        .b-player-label { width: 28px; height: 28px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; border: 1px solid var(--border); background: #fff; }
+        .b-player-points { font-size: 1.15rem; }
+        .b-player-fleet { font-size: 0.77rem; color: #64748b; }
+        .b-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; width: 100%; max-width: 400px; aspect-ratio: 1 / 1; margin: 0 auto; box-sizing: border-box; }
+        .b-grid, .b-grid .b-cell { box-sizing: border-box; margin: 0; }
+        .b-cell { width: 100%; height: auto; aspect-ratio: 1 / 1; box-sizing: border-box; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc; cursor: pointer; touch-action: none; }
+        .b-cell.ship { background: color-mix(in srgb, var(--accent) 32%, #ffffff); }
+        .b-cell.hit { background: #ef4444; border-color: #ef4444; }
+        .b-cell.miss { background: #cbd5e1; border-color: #94a3b8; }
+        .b-cell.ghost-valid { background: color-mix(in srgb, var(--accent) 45%, #ffffff); border-color: var(--accent); opacity: 0.7; }
+        .b-cell.ghost-invalid { background: #fecaca; border-color: #ef4444; opacity: 0.7; }
+        .b-label { font-size: 0.78rem; color: #64748b; margin-bottom: 6px; }
+        .b-flex { display: flex; flex-direction: row; justify-content: center; gap: 40px; flex-wrap: wrap; align-items: flex-start; width: 100%; max-width: 100%; overflow-x: hidden; }
+        .b-board { width: 100%; max-width: 400px; }
+        .loading { font-size: 0.84rem; color: #64748b; text-align: center; padding: 10px; }
+        .b-local-status-wrap { width: 100%; margin: 4px 0 8px 0; text-align: center; }
+        #b-status { margin: 0; color: #475569; font-size: 0.86rem; font-weight: 700; }
+        #b-substatus { margin: 4px 0 0 0; color: #64748b; font-size: 0.78rem; }
+        .b-controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: 100%; }
+        .b-controls .login-btn { width: auto; min-width: 118px; }
+        .b-grid.is-locked { pointer-events: none; opacity: 0.72; }
+        .ship-yard { width: min(100%, 620px); display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; background: #fff; border: 1px dashed var(--border); border-radius: 14px; padding: 10px; }
+        .ship-token { --ship-len: 2; display: inline-flex; gap: 4px; align-items: center; padding: 6px; border: 1px solid var(--border); border-radius: 10px; background: #fff; cursor: grab; touch-action: none; }
+        .ship-token.selected { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 20%, #fff); }
+        .ship-seg { width: 16px; height: 16px; border-radius: 4px; background: color-mix(in srgb, var(--accent) 36%, #fff); border: 1px solid var(--border); }
+        .ship-token:active { cursor: grabbing; }
+
+        @media (max-width: 680px) {
+            .game-panel { margin: 0 auto 104px auto; padding: 10px; border-radius: 18px; }
+            .decision-card, .settings-card { padding: 16px; border-radius: 22px; }
+            .decision-manage-row { flex-direction: column; }
+            .decision-manage-row .login-btn { width: 100%; }
+            .decision-chip { width: 100%; text-align: center; }
+            .blind-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .versus-row { grid-template-columns: 1fr; }
+            .decision-big-btn { width: 100%; }
+            .palette-grid { grid-template-columns: 1fr; }
+            .palette-builder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .vk-row { gap: 4px; }
+            .vk-btn { width: min(8.6vw, 30px); min-width: 22px; height: 32px; font-size: 0.7rem; }
+            #h-input-area .login-btn, #h-input-area input, #w-input-area .login-btn, #w-input-area input { width: 100% !important; }
+            .tab-nav { max-width: 100%; }
+            .tab-btn { font-size: 0.78rem; padding: 10px 8px; }
+            .xox-grid { width: min(96vw, 340px); }
+            .xox-cell { min-height: 58px; font-size: 1.7rem; }
+            .battleship-wrap { width: 100%; max-width: min(100vw, 500px); gap: 10px; overflow-x: hidden; padding: 5px; box-sizing: border-box; }
+            .b-scoreboard, .ship-yard { width: 100%; max-width: 100%; }
+            .b-flex { gap: 20px; width: 100%; flex-direction: column; align-items: center; }
+            .b-board { width: 100%; max-width: 400px; }
+            .b-grid { width: 100%; max-width: 400px; gap: 4px; margin: 0 auto; }
+            .b-cell { border-radius: 6px; width: 100%; height: auto; aspect-ratio: 1 / 1; box-sizing: border-box; }
+            .ship-seg { width: 14px; height: 14px; }
+            .bottom-nav { width: min(96%, 620px); }
+            .bottom-nav-btn { font-size: 0.66rem; padding: 10px 5px; }
+        }
+
+        .spa-page.active-page,
+        .game-panel.active-panel {
+            animation: fadeSlideIn 300ms ease-in-out;
+        }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         /* ADMIN PANELİ */
         #admin-panel { display: none; margin-top: 25px; padding: 20px; background: #FFF5F9; border-radius: 20px; border: 1.5px dashed var(--accent); text-align: left; }
@@ -154,11 +330,13 @@
     </div>
 </div>
 
+<div class="spa-shell" id="app-shell">
+<div id="home-page" class="spa-page">
 <div id="kpss-box" onclick="showNextFact()"><div id="kpss-content">Yükleniyor...</div></div>
 
 <div class="container" id="main-site">
     <div class="container-head"><button class="logout-btn" onclick="logout()">Çıkış Yap</button></div>
-    <div class="total-card"><div>Begüm <br><span id="total-begum" class="total-val" style="color:var(--accent)">--:--</span></div><div style="width: 1px; background: var(--border);"></div><div>Ömer <br><span id="total-omer" class="total-val" style="color:var(--periwinkle)">--:--</span></div></div>
+    <div class="total-card"><div><span id="name-begum">Begüm</span> <br><span id="total-begum" class="total-val" style="color:var(--accent)">--:--</span></div><div style="width: 1px; background: var(--border);"></div><div><span id="name-omer">Ömer</span> <br><span id="total-omer" class="total-val" style="color:var(--periwinkle)">--:--</span></div></div>
     <div class="progress-container"><div id="bar-begum"></div><div id="bar-omer"></div></div>
     <div class="table-wrapper"><table><thead><tr><th>Hafta</th><th>Begüm</th><th>Ömer</th><th>🎵 Şarkı</th></tr></thead><tbody id="table-body"></tbody></table></div>
     
@@ -170,10 +348,16 @@
     </div>
 </div>
 
+</div>
+
+<div id="games-page" class="spa-page">
+
 <div class="tab-nav" id="game-tabs">
-    <button class="tab-btn active" onclick="showTab('xox', event)">🎮 XOX</button>
-    <button class="tab-btn" onclick="showTab('wordle', event)">📝 Wordle</button>
-    <button class="tab-btn" onclick="showTab('hangman', event)">🪢 Adam Asmaca</button>
+    <div class="tab-indicator" id="game-tab-indicator"></div>
+    <button class="tab-btn active" data-tab="xox" onclick="showTab('xox', event)">🎮 XOX</button>
+    <button class="tab-btn" data-tab="wordle" onclick="showTab('wordle', event)">📝 Wordle</button>
+    <button class="tab-btn" data-tab="hangman" onclick="showTab('hangman', event)">🪢 Adam Asmaca</button>
+    <button class="tab-btn" data-tab="battleship" onclick="showTab('battleship', event)">🚢 Amiral Battı</button>
 </div>
 
 <div id="xox-panel" class="game-panel">
@@ -247,6 +431,180 @@
     <button class="login-btn round-btn" onclick="openRoundSummary('hangman')">Geçmiş Tur</button>
 </div>
 
+<div id="battleship-panel" class="game-panel">
+    <div class="battleship-wrap">
+        <div style="font-weight:800; color:#334155; text-align:center;">🚢 Amiral Battı PvP</div>
+        <div class="b-scoreboard">
+            <div class="b-player-score"><span class="b-player-label" id="b-name-begum">B</span> <span class="b-player-points" id="b-score-begum">0</span> <span class="b-player-fleet">Filo: <span id="b-fleet-begum">6</span></span></div>
+            <div style="font-weight:900; color:#94a3b8;">vs</div>
+            <div class="b-player-score"><span class="b-player-label" id="b-name-omer">Ö</span> <span class="b-player-points" id="b-score-omer">0</span> <span class="b-player-fleet">Filo: <span id="b-fleet-omer">6</span></span></div>
+        </div>
+        <div class="battleship-stats">
+            <div class="battleship-stat-card">Rakip Kalan Filo: <b id="b-ship-left">-</b></div>
+            <div class="battleship-stat-card">İsabet: <b id="b-hit">0</b></div>
+            <div class="battleship-stat-card">Iska: <b id="b-miss">0</b></div>
+            <div class="battleship-stat-card">Faz: <b id="b-phase">Hazırlık</b></div>
+        </div>
+        <div class="b-controls">
+            <button class="login-btn" id="b-rotate-btn" onclick="toggleBattleshipAxis()">Yön: Yatay</button>
+            <button class="login-btn" id="b-ready-btn" onclick="markBattleshipReady()">Hazırım</button>
+            <button class="login-btn" id="b-undo-btn" onclick="undoLastShipPlacement()">Geri Al</button>
+        </div>
+        <div class="ship-yard" id="b-ship-yard"></div>
+        <div class="b-flex">
+            <div class="b-board">
+                <div class="b-local-status-wrap">
+                    <p id="b-status">Yükleniyor...</p>
+                    <p id="b-substatus">Sıradaki gemi: -</p>
+                </div>
+                <div class="b-label">Senin Filon</div>
+                <div class="b-grid" id="b-my-grid"></div>
+            </div>
+            <div class="b-board">
+                <div class="b-label">Rakip Saha</div>
+                <div class="b-grid" id="b-opp-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<div id="decision-page" class="spa-page">
+    <div class="decision-card">
+        <div class="decision-title">🔮 Terapi</div>
+        <p style="margin:0; color:#64748b; font-size:0.9rem;">Terapi Odası'nda onaylı kategoriler için puanlama yap, sonuçları modaldan karşılaştır.</p>
+        <div class="decision-tabs" id="decision-tabs">
+            <button type="button" class="decision-tab-btn active" data-dtab="vote" onclick="switchDecisionTab('vote')">Terapi Odası</button>
+            <button type="button" class="decision-tab-btn" data-dtab="results" onclick="switchDecisionTab('results')">Sonuçlar</button>
+            <button type="button" class="decision-tab-btn" data-dtab="manage" onclick="switchDecisionTab('manage')">Kategori Yönetimi</button>
+        </div>
+
+        <div id="decision-vote-panel">
+            <div class="decision-manage-row" style="margin-top:12px;">
+                <div class="decision-votes" style="margin:0;">🔮 Henüz puanlamadığınız konular ve ✅ Tamamladığınız konular</div>
+            </div>
+            <div class="decision-mode-wrap" style="margin-top:12px; text-align:left;">
+                <div style="font-weight:800; color:#334155;">🔮 Henüz puanlamadığınız konular</div>
+                <div class="decision-list" id="decision-therapy-open-list"></div>
+            </div>
+            <div class="decision-mode-wrap" style="margin-top:12px; text-align:left;">
+                <div style="font-weight:800; color:#334155;">✅ Tamamladığınız konular</div>
+                <div class="decision-list" id="decision-therapy-completed-list"></div>
+            </div>
+        </div>
+
+        <div id="decision-results-panel" style="display:none;">
+            <div class="decision-manage-row" style="margin-top:12px;">
+                <div class="decision-votes" style="margin:0;">Kategorilerden birine tıkla, analiz modalında açılır.</div>
+            </div>
+            <div class="decision-list" id="decision-results-list"></div>
+        </div>
+
+        <div id="decision-manage-panel" style="display:none;">
+            <div class="decision-manage">
+                <div class="decision-manage-row">
+                    <button class="login-btn" style="width:auto;" onclick="openDecisionCategoryModal(0)">Kategori Ekle</button>
+                </div>
+            </div>
+            <div class="decision-list" id="decision-category-list"></div>
+        </div>
+        <div class="decision-votes" id="decision-global-status"></div>
+
+        <div id="decision-category-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.45); z-index:1200; align-items:center; justify-content:center; padding:14px;">
+            <div style="width:min(96vw,620px); max-height:90vh; overflow-y:auto; background:#fff; border-radius:20px; border:1px solid var(--border); padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+                    <div id="decision-category-modal-title" style="font-weight:800; color:#334155;">Kategori</div>
+                    <button type="button" class="decision-item-del" onclick="closeDecisionCategoryModal()">✕</button>
+                </div>
+                <div class="decision-manage-row" style="margin-bottom:8px;">
+                    <input type="text" id="decision-category-modal-input" placeholder="Kategori adı">
+                    <button class="login-btn" style="width:auto;" onclick="saveDecisionCategoryModal()">Kaydet</button>
+                </div>
+                <div class="decision-row" id="decision-modal-actions" style="margin:8px 0; justify-content:flex-start;">
+                    <button class="login-btn decision-danger-btn" id="decision-modal-delete-btn" style="display:none;" onclick="deleteDecisionCategoryFromModal()">Sil</button>
+                </div>
+                <div class="decision-manage-row" id="decision-modal-item-manage" style="margin-top:10px;">
+                    <input type="text" id="decision-modal-item-input" placeholder="Kategoriye eleman ekle">
+                    <button class="login-btn" id="decision-modal-add-item-btn" style="width:auto;" onclick="addDecisionItemFromModal()">Eleman Ekle</button>
+                </div>
+                <div class="decision-votes" id="decision-modal-lock-note" style="display:none;"></div>
+                <div class="decision-list" id="decision-modal-item-list" style="margin-top:10px;"></div>
+            </div>
+        </div>
+
+        <div id="decision-results-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.45); z-index:1200; align-items:center; justify-content:center; padding:14px;">
+            <div style="width:min(96vw,620px); max-height:90vh; overflow-y:auto; background:#fff; border-radius:20px; border:1px solid var(--border); padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+                    <div id="decision-results-modal-title" style="font-weight:800; color:#334155;">Sonuçlar</div>
+                    <button type="button" class="decision-item-del" onclick="closeDecisionResultsModal()">✕</button>
+                </div>
+                <div class="champions-wrap" id="decision-results-modal-content" style="margin-top:10px;"></div>
+            </div>
+        </div>
+
+        <div id="decision-vote-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.45); z-index:1200; align-items:center; justify-content:center; padding:14px;">
+            <div style="width:min(96vw,620px); max-height:90vh; overflow-y:auto; background:#fff; border-radius:20px; border:1px solid var(--border); padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+                    <div id="decision-vote-modal-title" style="font-weight:800; color:#334155;">Terapi Puanlama</div>
+                    <button type="button" class="decision-item-del" onclick="closeDecisionVoteModal()">✕</button>
+                </div>
+                <div class="decision-progress" id="decision-vote-modal-progress">İlerleme: 0/0</div>
+                <div class="rating-wrap" id="decision-vote-rating-wrap" style="margin-top:10px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="settings-page" class="spa-page">
+    <div class="settings-card">
+        <div class="settings-title">⚙️ Ayarlar</div>
+        <p style="margin:0 0 12px 0; color:#64748b; font-size:0.9rem;">Paylaşımlı Palet Kütüphanesi'nden bir tema seç veya yeni bir palet üret.</p>
+        <div class="settings-grid">
+            <div style="text-align:left; font-size:0.88rem; color:#475569; line-height:1.5;">
+                <div>Profil: <b id="settings-user">-</b></div>
+            </div>
+            <div>
+                <button class="login-btn" type="button" onclick="openPaletteCreateModal()">Tema Oluştur</button>
+            </div>
+            <div>
+                <div style="font-size:0.84rem; color:#64748b; margin-bottom:6px;">Tema Kütüphanesi</div>
+                <div class="palette-library" id="palette-library-list"></div>
+            </div>
+            <div class="settings-preview">
+                <div>Canlı Önizleme:</div>
+                <div class="settings-preview-name" id="settings-preview-name">Begüm</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="palette-create-modal" class="palette-modal">
+    <div class="palette-modal-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <div style="font-weight:800; color:#334155;">🎨 Tema Oluştur</div>
+            <button type="button" class="decision-item-del" onclick="closePaletteCreateModal()">✕</button>
+        </div>
+        <button class="login-btn" type="button" style="margin-top:10px;" onclick="generatePaletteDraft(true)">Rastgele Üret (Boşluk Tuşu)</button>
+        <div class="palette-builder-grid" id="palette-builder-grid"></div>
+        <div style="margin-top:10px;">
+            <input type="text" id="palette-name-input" placeholder="Palet adı (örn: Pazar Kahvesi)">
+        </div>
+        <div class="decision-row" style="justify-content:flex-end;">
+            <button class="login-btn" style="width:auto;" type="button" onclick="handleSavePalette()">Paylaşılan Kütüphaneye Ekle</button>
+        </div>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottom-nav">
+    <div class="bottom-nav-indicator" id="bottom-nav-indicator"></div>
+    <button class="bottom-nav-btn active" data-page="home" onclick="showPage('home')">🏠 Ana Sayfa</button>
+    <button class="bottom-nav-btn" data-page="games" onclick="showPage('games')">🎮 Oyunlar</button>
+    <button class="bottom-nav-btn" data-page="decision" onclick="showPage('decision')">🔮 Terapi</button>
+    <button class="bottom-nav-btn" data-page="settings" onclick="showPage('settings')">⚙️ Ayarlar</button>
+</nav>
+</div>
+
 <div id="history-modal"><div class="modal-content"><h3 style="margin-top:0">🎵 Arşiv</h3><div id="history-list" style="max-height:250px; overflow-y:auto;"></div><button class="login-btn" onclick="closeModal()" style="margin-top:15px">Kapat</button></div></div>
 <div id="round-modal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;"><div class="modal-content"><h3 id="round-modal-title" style="margin-top:0">Geçmiş Tur</h3><div id="round-summary-content" style="text-align:left; max-height:320px; overflow-y:auto; overflow-x:hidden; border-radius:10px; padding:10px; font-size:0.8rem;"></div><button class="login-btn" onclick="closeRoundModal()" style="margin-top:15px">Kapat</button></div></div>
 <div class="music-bar" id="music-player"><div id="youtube-container"></div></div>
@@ -258,6 +616,46 @@
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inljem9wbHFza21yb2xwYmRic25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDQ3ODAsImV4cCI6MjA4NjU4MDc4MH0.hmEnEHugyTU6gLkFHJ9qsMVKETWCI6YN24SShfol6sc";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
     const REMEMBER_KEY = 'scoreboardRememberedUser';
+    const ACTIVE_PAGE_KEY = 'scoreboardActivePage';
+    const ACTIVE_GAME_TAB_KEY = 'scoreboardActiveGameTab';
+    const LOCAL_SETTINGS_KEY = 'scoreboardUserSettings';
+    const LOCAL_DECISION_KEY = 'scoreboardDecisionFallback';
+    const LOCAL_DECISION_FLOW_KEY = 'scoreboardDecisionFlowState';
+    const LOCAL_DECISION_SELECTED_KEY = 'scoreboardDecisionSelectedCategories';
+    const LOCAL_DECISION_TAB_KEY = 'scoreboardDecisionActiveTab';
+    const LOCAL_BATTLESHIP_KEY = 'scoreboardBattleshipFallback';
+    const LOCAL_BATTLESHIP_RESET_KEY = 'scoreboardBattleshipResetV1';
+    const BATTLESHIP_TABLE = 'amiral_batti_durumu';
+    const BATTLESHIP_SIZE = 6;
+    const BATTLESHIP_SHIPS = [4, 3, 3, 2, 2, 2];
+    const DEFAULT_ROSE_THEME = {
+        id: 0,
+        palette_name: 'Rose Pop',
+        color1: '#FDF2F8',
+        color2: '#FF99C9',
+        color3: '#FF99C9',
+        color4: '#C1BDDB',
+        created_by: 'Sistem',
+        is_default: true
+    };
+    const defaultTheme = {
+        id: 0,
+        palette_name: 'Rose Pop',
+        color1: '#FDF2F8',
+        color2: '#FF99C9',
+        color3: '#FF99C9',
+        color4: '#C1BDDB',
+        created_by: 'Sistem',
+        is_default: true
+    };
+    const THEME_PRESETS = [
+        { key: 'rose', label: 'Rose Pop', bg: '#FDF2F8', accent: '#FF99C9', border: '#FCE7F3', text: '#303A2B', periwinkle: '#C1BDDB' },
+        { key: 'mint', label: 'Mint Calm', bg: '#ECFDF5', accent: '#10B981', border: '#D1FAE5', text: '#134E4A', periwinkle: '#A7F3D0' },
+        { key: 'sunset', label: 'Sunset Peach', bg: '#FFF7ED', accent: '#FB923C', border: '#FED7AA', text: '#7C2D12', periwinkle: '#FDBA74' },
+        { key: 'ocean', label: 'Ocean Blue', bg: '#EFF6FF', accent: '#3B82F6', border: '#BFDBFE', text: '#1E3A8A', periwinkle: '#93C5FD' },
+        { key: 'forest', label: 'Forest Moss', bg: '#F0FDF4', accent: '#22C55E', border: '#BBF7D0', text: '#14532D', periwinkle: '#86EFAC' },
+        { key: 'berry', label: 'Berry Punch', bg: '#FFF1F2', accent: '#F43F5E', border: '#FFE4E6', text: '#881337', periwinkle: '#FDA4AF' }
+    ];
     const TURKISH_KEYBOARD_ROWS = [
         ['Q','W','E','R','T','Y','U','I','O','P','Ğ','Ü'],
         ['A','S','D','F','G','H','J','K','L','Ş','İ'],
@@ -303,12 +701,270 @@
             };
         }
     };
+
+    function buildEmptyBattleshipBoard() {
+        return Array.from({ length: BATTLESHIP_SIZE }, () => Array(BATTLESHIP_SIZE).fill(0));
+    }
+
+    function normalizeBattleshipBoard(boardData) {
+        if (!Array.isArray(boardData) || !Array.isArray(boardData[0])) return buildEmptyBattleshipBoard();
+        return Array.from({ length: BATTLESHIP_SIZE }, (_, r) =>
+            Array.from({ length: BATTLESHIP_SIZE }, (_, c) => {
+                const value = boardData?.[r]?.[c];
+                return Number.isFinite(Number(value)) ? Number(value) : 0;
+            })
+        );
+    }
+
+    function buildDefaultBattleshipPlayer() {
+        return {
+            board: buildEmptyBattleshipBoard(),
+            attacks: buildEmptyBattleshipBoard(),
+            ships: [],
+            ready: false,
+            hits: 0,
+            misses: 0,
+            score: 0
+        };
+    }
+
+    function buildDefaultBattleshipState() {
+        return {
+            phase: 'prep',
+            turn: 'Begüm',
+            starter: null,
+            lastLoser: null,
+            begum: buildDefaultBattleshipPlayer(),
+            omer: buildDefaultBattleshipPlayer()
+        };
+    }
+
+    function buildDefaultDecisionState() {
+        return {
+            categories: [],
+            items: [],
+            ratings: []
+        };
+    }
+
+    const DataServices = {
+        settings: {
+            async fetch(userName) {
+                const local = parseJsonField(localStorage.getItem(LOCAL_SETTINGS_KEY), null);
+                if (!userName) return local;
+                const { data, error } = await _supabase
+                    .from('user_settings')
+                    .select('*')
+                    .eq('user_name', userName)
+                    .maybeSingle();
+                if (error || !data) {
+                    const localUser = String(local?.user_name || '').trim();
+                    return localUser === String(userName || '').trim() ? local : null;
+                }
+                return data;
+            },
+            async saveActivePalette(userName, paletteId) {
+                if (!userName) return { data: null, error: { message: 'missing-user' } };
+                const local = parseJsonField(localStorage.getItem(LOCAL_SETTINGS_KEY), {});
+                localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify({ ...local, user_name: userName, active_palette_id: Number(paletteId) || 0 }));
+                const activePaletteId = Number(paletteId) || 0;
+                const { data: existing } = await _supabase
+                    .from('user_settings')
+                    .select('user_name')
+                    .eq('user_name', userName)
+                    .maybeSingle();
+                if (existing?.user_name) {
+                    return _supabase
+                        .from('user_settings')
+                        .update({ active_palette_id: activePaletteId })
+                        .eq('user_name', userName);
+                }
+                return _supabase
+                    .from('user_settings')
+                    .insert([{ user_name: userName, active_palette_id: activePaletteId }]);
+            }
+        },
+        palettes: {
+            async fetchAll() {
+                const local = parseJsonField(localStorage.getItem('scoreboardSharedPalettes'), []);
+                const { data, error } = await _supabase
+                    .from('shared_palettes')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                if (error || !Array.isArray(data)) return { data: local, error };
+                localStorage.setItem('scoreboardSharedPalettes', JSON.stringify(data));
+                return { data, error: null };
+            },
+            async add(name, colors, createdBy) {
+                const payload = {
+                    palette_name: name,
+                    color1: colors[0],
+                    color2: colors[1],
+                    color3: colors[2],
+                    color4: colors[3],
+                    created_by: createdBy || 'Misafir'
+                };
+                return _supabase.from('shared_palettes').insert([payload]).select().maybeSingle();
+            },
+            async remove(paletteId) {
+                return _supabase
+                    .from('shared_palettes')
+                    .delete()
+                    .eq('id', Number(paletteId));
+            }
+        },
+        decision: {
+            async fetchAll() {
+                const local = parseJsonField(localStorage.getItem(LOCAL_DECISION_KEY), buildDefaultDecisionState());
+                const [cRes, iRes, rRes] = await Promise.all([
+                    _supabase.from('decision_categories').select('*'),
+                    _supabase.from('decision_items').select('*'),
+                    _supabase.from('decision_ratings').select('*')
+                ]);
+                const errors = [cRes.error, iRes.error, rRes.error].filter(Boolean);
+                return {
+                    categories: cRes.error ? (local.categories || []) : (cRes.data || []),
+                    items: iRes.error ? (local.items || []) : (iRes.data || []),
+                    ratings: rRes.error ? (local.ratings || []) : (rRes.data || []),
+                    _errors: errors.map(e => e.message || 'Bilinmeyen hata')
+                };
+            },
+            async addCategory(name, userName, allowedModes = ['rating']) {
+                const payload = { name, created_by: userName, allowed_modes: allowedModes };
+                const { error } = await _supabase.from('decision_categories').insert([payload]);
+                if (error) return { data: null, error };
+                return { data: payload, error: null };
+            },
+            async addItem(categoryId, label, userName) {
+                const payload = { item_name: label, category_id: categoryId, created_by: userName };
+                const { error } = await _supabase.from('decision_items').insert([payload]);
+                if (error) return { data: null, error };
+                return { data: payload, error: null };
+            },
+            async deleteCategory(categoryId, userName) {
+                return _supabase.from('decision_categories').delete().eq('id', Number(categoryId)).eq('created_by', userName);
+            },
+            async deleteItem(itemId, userName) {
+                return _supabase.from('decision_items').delete().eq('id', Number(itemId)).eq('created_by', userName);
+            },
+            async updateCategory(categoryId, patch) {
+                return _supabase.from('decision_categories').update(patch).eq('id', Number(categoryId));
+            },
+            async fetchRatingsByCategory(categoryId) {
+                if (!Number.isFinite(Number(categoryId)) || Number(categoryId) <= 0) return { data: [], error: null };
+                return _supabase
+                    .from('decision_ratings')
+                    .select('*')
+                    .eq('category_id', Number(categoryId));
+            },
+            async upsertRating(payload) {
+                const local = parseJsonField(localStorage.getItem(LOCAL_DECISION_KEY), buildDefaultDecisionState());
+                const safePayload = {
+                    category_id: Number(payload.category_id),
+                    item_id: Number(payload.item_id),
+                    user_id: payload.user_id,
+                    rating: payload.rating === null || payload.rating === undefined ? null : Number(payload.rating)
+                };
+                if (!Number.isFinite(safePayload.category_id) || safePayload.category_id <= 0) {
+                    return { error: { message: 'category_id zorunlu.' } };
+                }
+                if (!Number.isFinite(safePayload.item_id) || safePayload.item_id <= 0) {
+                    return { error: { message: 'item_id zorunlu.' } };
+                }
+                if (!safePayload.user_id) {
+                    return { error: { message: 'user_id zorunlu.' } };
+                }
+                if (safePayload.rating !== null && !Number.isFinite(safePayload.rating)) {
+                    return { error: { message: 'rating zorunlu.' } };
+                }
+                const { error } = await _supabase
+                    .from('decision_ratings')
+                    .upsert(safePayload, { onConflict: 'user_id,item_id' });
+                if (error) {
+                    const idx = local.ratings.findIndex(r => r.category_id === payload.category_id && r.item_id === payload.item_id && (r.user_id || r.user_name) === payload.user_id);
+                    if (idx >= 0) local.ratings[idx] = { ...local.ratings[idx], ...payload };
+                    else local.ratings.push({ id: Date.now(), ...payload });
+                    localStorage.setItem(LOCAL_DECISION_KEY, JSON.stringify(local));
+                }
+                return { error };
+            }
+        },
+        battleship: {
+            async fetch() {
+                const local = parseJsonField(localStorage.getItem(LOCAL_BATTLESHIP_KEY), buildDefaultBattleshipState());
+                if (!loggedInUser) return local;
+                const { data, error } = await _supabase.from(BATTLESHIP_TABLE).select('id,state_json').eq('id', 1).maybeSingle();
+                if (error) return local;
+                if (!data) {
+                    const { error: upsertError } = await _supabase.from(BATTLESHIP_TABLE).upsert([{ id: 1, state_json: local }], { onConflict: 'id' });
+                    if (upsertError) return local;
+                    battleshipLastSavedHash = JSON.stringify(local);
+                    return local;
+                }
+                if (!data.state_json) {
+                    await _supabase.from(BATTLESHIP_TABLE).upsert([{ id: 1, state_json: local }], { onConflict: 'id' });
+                    battleshipLastSavedHash = JSON.stringify(local);
+                    return local;
+                }
+                const parsed = parseJsonField(data.state_json, local);
+                battleshipLastSavedHash = JSON.stringify(parsed);
+                return parsed;
+            },
+            async save(state) {
+                if (!loggedInUser) return { data: null, error: { message: 'missing-user' } };
+                const nextHash = JSON.stringify(state);
+                if (battleshipLastSavedHash === nextHash) return { data: null, error: null };
+                battleshipLastSavedHash = nextHash;
+                localStorage.setItem(LOCAL_BATTLESHIP_KEY, JSON.stringify(state));
+                return _supabase.from(BATTLESHIP_TABLE).upsert([{ id: 1, state_json: state }], { onConflict: 'id' });
+            }
+        }
+    };
     let loggedInUser = "";
     let wordleWaiting = false;
     let hangmanWaiting = false;
+    let battleshipWaiting = false;
     let wordleMessageTimer = null;
     let hangmanMessageTimer = null;
     let isLampOn = false;
+    let activeThemeKey = 'rose';
+    let currentThemeState = null;
+    let sharedPaletteCache = [];
+    let activePaletteId = 0;
+    let paletteDraft = ['#FDF2F8', '#FF99C9', '#FF99C9', '#C1BDDB'];
+    let isPaletteModalOpen = false;
+    let themeRealtimeChannel = null;
+    let decisionStateCache = null;
+    let decisionActiveTab = 'vote';
+    let decisionLoadState = 'idle';
+    let decisionLastError = '';
+    let decisionSelectedCategoryIds = { manage: 0, vote: 0, results: 0 };
+    let decisionModalCategoryId = 0;
+    let decisionResultsModalCategoryId = 0;
+    let decisionRuntimeState = {
+        categoryId: 0,
+        mode: 'rating',
+        items: [],
+        ratings: [],
+        currentIndex: 0,
+        blindOrder: [],
+        blindFilledSlots: {},
+        blindCurrentItemId: 0
+    };
+    let battleshipAxis = 'horizontal';
+    let battleshipPlacingIndex = 0;
+    let selectedShipLength = null;
+    let battleshipGhostCells = [];
+    let battleshipDragMeta = null;
+    let battleshipRelocationPromise = null;
+    let battleshipActiveRelocation = null;
+    let battleshipDropCommitted = false;
+    let battleshipTouchDrag = null;
+    let battleshipTouchBound = false;
+    let battleshipUiState = null;
+    let battleshipShotQueue = [];
+    let battleshipProcessingShot = false;
+    let battleshipLastSavedHash = null;
     const STRING_PATH_IDLE = 'M12 22 C12 42 12 70 12 98';
     const STRING_PATH_PULL = 'M12 22 C13 50 13 86 12 112';
     const STRING_PATH_SWAY_RIGHT = 'M12 22 C19 45 24 74 19 100';
@@ -318,6 +974,67 @@
         if (value === null || value === undefined) return fallback;
         if (typeof value === 'object') return value;
         try { return JSON.parse(value); } catch { return fallback; }
+    }
+
+    function toSafeUrlParam(value) {
+        return encodeURIComponent(String(value || '').trim());
+    }
+
+    function toSafeDbUser(value) {
+        return String(value || '').trim();
+    }
+
+    function fromSafeDbUser(value) {
+        return String(value || '');
+    }
+
+    function getDefaultXoxRow() {
+        return { id: 1, board: JSON.stringify(EMPTY_XOX_BOARD), turn: 'Begüm', begum_wins: 0, omer_wins: 0 };
+    }
+
+    function getDefaultWordleRow() {
+        return {
+            id: 1,
+            kelime: null,
+            durum: 'bekliyor',
+            belirleyen: 'Begüm',
+            harf_sayisi: 5,
+            tahminler: [],
+            begum_toplam_puan: 0,
+            omer_toplam_puan: 0,
+            son_tur_ozeti: null
+        };
+    }
+
+    function getDefaultHangmanRow() {
+        return {
+            id: 1,
+            kelime: null,
+            ipucu: null,
+            durum: 'bekliyor',
+            belirleyen: 'Begüm',
+            yanlis_harfler: [],
+            dogru_harfler: [' '],
+            puanlar: JSON.stringify({ begum: 0, omer: 0 }),
+            son_tur_ozeti: null
+        };
+    }
+
+    async function fetchOrCreateSingletonRow(table, defaults) {
+        const { data, error } = await _supabase.from(table).select('*').eq('id', 1).maybeSingle();
+        if (!error && data) return data;
+        if (error) console.warn(`${table} fetch warning`, error.message || error);
+        const fallback = { id: 1, ...defaults };
+        const { data: created, error: upsertError } = await _supabase
+            .from(table)
+            .upsert(fallback, { onConflict: 'id' })
+            .select()
+            .maybeSingle();
+        if (upsertError) {
+            console.warn(`${table} upsert warning`, upsertError.message || upsertError);
+            return fallback;
+        }
+        return created || fallback;
     }
 
     function buildXOXTriples() {
@@ -458,6 +1175,374 @@
         }
     }
 
+    function getThemeByKey(themeKey) {
+        return THEME_PRESETS.find(p => p.key === themeKey) || THEME_PRESETS[0];
+    }
+
+    function sanitizeHexColor(value, fallback) {
+        const safe = String(value || '').trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(safe)) return safe;
+        return fallback;
+    }
+
+    function getPartnerName() {
+        return switchUser(loggedInUser || 'Begüm');
+    }
+
+    function buildThemeFromPreset(themeKey) {
+        return {
+            id: DEFAULT_ROSE_THEME.id,
+            color1: DEFAULT_ROSE_THEME.color1,
+            color2: DEFAULT_ROSE_THEME.color2,
+            color3: DEFAULT_ROSE_THEME.color3,
+            color4: DEFAULT_ROSE_THEME.color4,
+            palette_name: DEFAULT_ROSE_THEME.palette_name,
+            created_by: DEFAULT_ROSE_THEME.created_by,
+            is_default: true
+        };
+    }
+
+    function extractPaletteColors(palette) {
+        const colors = Array.isArray(palette?.colors) ? palette.colors : parseJsonField(palette?.colors, []);
+        return [
+            sanitizeHexColor(palette?.color1 || palette?.color_1 || colors?.[0], '#FDF2F8'),
+            sanitizeHexColor(palette?.color2 || palette?.color_2 || colors?.[1], '#FF99C9'),
+            sanitizeHexColor(palette?.color3 || palette?.color_3 || colors?.[2], '#FF99C9'),
+            sanitizeHexColor(palette?.color4 || palette?.color_4 || colors?.[3], '#C1BDDB')
+        ];
+    }
+
+    function applyPaletteTheme(palette) {
+        const [bg, nameColor, accent, secondary] = extractPaletteColors(palette || buildThemeFromPreset(activeThemeKey));
+        currentThemeState = { bg, nameColor, accent, secondary };
+        const root = document.documentElement;
+        root.style.setProperty('--bg-color', bg);
+        root.style.setProperty('--card-bg', bg);
+        root.style.setProperty('--accent', accent);
+        root.style.setProperty('--secondary', secondary);
+        root.style.setProperty('--periwinkle', secondary);
+        root.style.setProperty('--border', secondary);
+        const profileNameNodes = [document.getElementById('settings-user'), document.getElementById('settings-preview-name')];
+        profileNameNodes.forEach(node => {
+            if (!node) return;
+            node.style.color = nameColor;
+            node.innerText = loggedInUser || '-';
+        });
+        const begumName = document.getElementById('name-begum');
+        const omerName = document.getElementById('name-omer');
+        if (begumName) begumName.style.color = loggedInUser === 'Begüm' ? nameColor : '#334155';
+        if (omerName) omerName.style.color = loggedInUser === 'Ömer' ? nameColor : '#334155';
+        const bBegum = document.getElementById('b-name-begum');
+        const bOmer = document.getElementById('b-name-omer');
+        if (bBegum) {
+            bBegum.innerText = 'B';
+            bBegum.style.color = loggedInUser === 'Begüm' ? nameColor : '#334155';
+        }
+        if (bOmer) {
+            bOmer.innerText = 'Ö';
+            bOmer.style.color = loggedInUser === 'Ömer' ? nameColor : '#334155';
+        }
+    }
+
+    function renderPaletteLibrary() {
+        const root = document.getElementById('palette-library-list');
+        if (!root) return;
+        if (!sharedPaletteCache.length) {
+            root.innerHTML = '<div class="decision-item">Kütüphanede henüz tema yok. İlk temayı sen oluştur.</div>';
+            return;
+        }
+        root.innerHTML = sharedPaletteCache.map(p => {
+            const id = Number(p.id || 0);
+            const colors = extractPaletteColors(p);
+            const title = p.name || p.palette_name || `Tema ${id || ''}`;
+            const author = p.created_by || p.user_name || 'Bilinmiyor';
+            const isActive = Number(activePaletteId) === id;
+            const isDefault = Boolean(p.is_default) || id === 0;
+            const canDelete = !isDefault && String(author || '').trim() === String(loggedInUser || '').trim();
+            return `
+                <div class="palette-card ${isActive ? 'decision-panel-enter' : ''}" onclick="applyPaletteFromLibrary(${id})">
+                    <div class="palette-card-head">
+                        <div class="palette-card-title">${escapeHtml(title)}</div>
+                        ${canDelete ? `<button type="button" class="palette-delete-btn" onclick="deletePaletteFromLibrary(event, ${id})" title="Paleti sil">✕</button>` : ''}
+                    </div>
+                    <div class="palette-card-meta">Ekleyen: ${escapeHtml(author)}</div>
+                    <div class="palette-strip">
+                        <span style="background:${colors[0]}"></span>
+                        <span style="background:${colors[1]}"></span>
+                        <span style="background:${colors[2]}"></span>
+                        <span style="background:${colors[3]}"></span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function applyPaletteFromLibrary(paletteId, persist = true) {
+        const picked = sharedPaletteCache.find(p => Number(p.id) === Number(paletteId));
+        if (!picked) return;
+        activePaletteId = Number(paletteId) || 0;
+        applyPaletteTheme(picked);
+        renderPaletteLibrary();
+        if (persist && loggedInUser) await DataServices.settings.saveActivePalette(loggedInUser, activePaletteId);
+    }
+
+    async function deletePaletteFromLibrary(event, paletteId) {
+        if (event?.stopPropagation) event.stopPropagation();
+        const id = Number(paletteId || 0);
+        if (!id) return;
+        const palette = sharedPaletteCache.find(p => Number(p.id) === id);
+        if (palette?.is_default || id === 0) return;
+        const author = String(palette?.created_by || palette?.user_name || '').trim();
+        if (!palette || author !== String(loggedInUser || '').trim()) return;
+        const ok = confirm('🔮 Bu renk paletini kütüphaneden kalıcı olarak silmek istiyor musun?');
+        if (!ok) return;
+        const { error } = await DataServices.palettes.remove(id);
+        if (error) {
+            showPaletteToast('Palet silinemedi.', true);
+            return;
+        }
+        if (Number(activePaletteId) === id) {
+            activePaletteId = 0;
+            if (loggedInUser) await DataServices.settings.saveActivePalette(loggedInUser, 0);
+        }
+        await fetchPalettes();
+        showPaletteToast('Palet kütüphaneden silindi.');
+    }
+
+    function renderPaletteDraftEditor() {
+        const root = document.getElementById('palette-builder-grid');
+        if (!root) return;
+        root.innerHTML = paletteDraft.map((color, idx) => `
+            <div class="palette-builder-item">
+                <div class="palette-preview-swatch" id="palette-swatch-${idx + 1}" style="background:${color}; cursor:pointer;" onclick="copyPaletteHex(${idx + 1})" title="HEX kodunu kopyala"></div>
+                <input class="palette-hex-input" id="palette-hex-${idx + 1}" value="${escapeHtml(color)}" maxlength="7" oninput="updatePaletteDraftHex(${idx + 1}, this.value)">
+            </div>
+        `).join('');
+    }
+
+    function showPaletteToast(message, isError = false) {
+        const old = document.getElementById('palette-toast');
+        if (old) old.remove();
+        const toast = document.createElement('div');
+        toast.id = 'palette-toast';
+        toast.className = 'palette-toast';
+        if (isError) toast.style.background = '#991b1b';
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 1800);
+    }
+
+    function normalizeHexInput(value) {
+        const raw = String(value || '').trim().toUpperCase().replace(/[^0-9A-F#]/g, '');
+        const body = raw.startsWith('#') ? raw.slice(1) : raw;
+        if (body.length !== 6) return null;
+        if (!/^[0-9A-F]{6}$/.test(body)) return null;
+        return `#${body}`;
+    }
+
+    function updatePaletteDraftVisual(index, color, isValid) {
+        const swatch = document.getElementById(`palette-swatch-${index + 1}`);
+        const input = document.getElementById(`palette-hex-${index + 1}`);
+        if (swatch) swatch.style.background = color;
+        if (input) input.classList.toggle('invalid', !isValid);
+    }
+
+    function applyDraftPreview() {
+        applyPaletteTheme({ color_1: paletteDraft[0], color_2: paletteDraft[1], color_3: paletteDraft[2], color_4: paletteDraft[3] });
+    }
+
+    function hslToHex(h, s, l) {
+        s /= 100;
+        l /= 100;
+        const k = n => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = n => {
+            const color = l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+            return Math.round(255 * color).toString(16).padStart(2, '0');
+        };
+        return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+    }
+
+    function generatePaletteDraft(rerender = false) {
+        const baseHue = Math.floor(Math.random() * 360);
+        const sat = 55 + Math.floor(Math.random() * 18);
+        paletteDraft = [
+            hslToHex((baseHue + 350) % 360, sat - 25, 92),
+            hslToHex((baseHue + 15) % 360, sat, 52),
+            hslToHex((baseHue + 45) % 360, sat + 6, 48),
+            hslToHex((baseHue + 75) % 360, sat - 8, 66)
+        ];
+        if (rerender) renderPaletteDraftEditor();
+        applyDraftPreview();
+    }
+
+    function updatePaletteDraftHex(slot, value) {
+        const index = Number(slot) - 1;
+        if (index < 0 || index > 3) return;
+        const normalized = normalizeHexInput(value);
+        if (!normalized) {
+            updatePaletteDraftVisual(index, paletteDraft[index], false);
+            return;
+        }
+        paletteDraft[index] = normalized;
+        const input = document.getElementById(`palette-hex-${index + 1}`);
+        if (input) input.value = normalized;
+        updatePaletteDraftVisual(index, normalized, true);
+        applyDraftPreview();
+    }
+
+    async function copyPaletteHex(slot) {
+        const index = Number(slot) - 1;
+        if (index < 0 || index > 3) return;
+        const value = paletteDraft[index];
+        try {
+            await navigator.clipboard.writeText(value);
+            showPaletteToast(`Kopyalandı: ${value}`);
+        } catch {
+            showPaletteToast('Panoya kopyalanamadı.', true);
+        }
+    }
+
+    function openPaletteCreateModal() {
+        isPaletteModalOpen = true;
+        generatePaletteDraft(false);
+        renderPaletteDraftEditor();
+        applyDraftPreview();
+        const nameInput = document.getElementById('palette-name-input');
+        if (nameInput) nameInput.value = '';
+        const modal = document.getElementById('palette-create-modal');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function closePaletteCreateModal() {
+        isPaletteModalOpen = false;
+        const modal = document.getElementById('palette-create-modal');
+        if (modal) modal.style.display = 'none';
+        if (activePaletteId) {
+            applyPaletteFromLibrary(activePaletteId, false);
+        } else {
+            applyPaletteTheme(buildThemeFromPreset(activeThemeKey));
+        }
+    }
+
+    async function fetchPalettes() {
+        const libraryRes = await DataServices.palettes.fetchAll();
+        const dynamicPalettes = (libraryRes?.data || []).slice().sort((a, b) => {
+            const aTs = new Date(a?.created_at || 0).getTime() || 0;
+            const bTs = new Date(b?.created_at || 0).getTime() || 0;
+            return bTs - aTs;
+        });
+        sharedPaletteCache = [buildThemeFromPreset('rose'), ...dynamicPalettes.filter(p => Number(p?.id || 0) !== 0)];
+        renderPaletteLibrary();
+        return sharedPaletteCache;
+    }
+
+    async function handleSavePalette() {
+        const nameInput = document.getElementById('palette-name-input');
+        const paletteName = (nameInput?.value || '').trim() || 'Yeni Tema';
+        const colors = paletteDraft.map(c => sanitizeHexColor(c, '#FFFFFF'));
+        const createdBy = (loggedInUser || '').trim() || 'Misafir';
+        const { data, error } = await DataServices.palettes.add(paletteName, colors, createdBy);
+        if (error) {
+            console.log('Insert Error:', error);
+            showPaletteToast('Palet kaydedilemedi.', true);
+            alert(`Palet kaydedilemedi: ${error.message || 'Bilinmeyen hata'}`);
+            return;
+        }
+        await fetchPalettes();
+        const newId = Number(data?.id || 0);
+        if (newId) await applyPaletteFromLibrary(newId, true);
+        closePaletteCreateModal();
+        showPaletteToast('Palet kütüphaneye eklendi.');
+    }
+
+    function handlePaletteModalKeydown(event) {
+        if (!isPaletteModalOpen || event.key !== ' ') return;
+        const target = event.target;
+        if (target && (target.id === 'palette-name-input' || String(target.id || '').startsWith('palette-hex-'))) return;
+        event.preventDefault();
+        generatePaletteDraft(true);
+    }
+
+    function initThemeRealtime() {
+        if (themeRealtimeChannel) return;
+        themeRealtimeChannel = _supabase.channel('theme-library')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'shared_palettes' }, () => loadUserSettings())
+            .subscribe();
+    }
+
+    async function loadUserSettings() {
+        const remembered = getRememberedLogin();
+        const currentUser = (loggedInUser || remembered?.user || '').trim();
+        if (!currentUser) return;
+        const [, mySetting] = await Promise.all([
+            fetchPalettes(),
+            DataServices.settings.fetch(currentUser)
+        ]);
+        const local = parseJsonField(localStorage.getItem(LOCAL_SETTINGS_KEY), {});
+        const localId = String(local?.user_name || '').trim() === String(currentUser || '').trim()
+            ? Number(local?.active_palette_id || 0)
+            : 0;
+        const activeId = Number(mySetting?.active_palette_id ?? localId ?? 0);
+        activePaletteId = activeId;
+        const defaultPalette = defaultTheme;
+        const currentTheme = sharedPaletteCache.find(p => Number(p.id) === activeId) || defaultPalette;
+        applyPaletteTheme(currentTheme);
+        if (activeId && Number(currentTheme?.id || 0) !== activeId) {
+            activePaletteId = 0;
+            await DataServices.settings.saveActivePalette(currentUser, 0);
+        }
+    }
+
+    async function saveUserSettings() {
+        if (!loggedInUser) return;
+        if (activePaletteId) await DataServices.settings.saveActivePalette(loggedInUser, activePaletteId);
+    }
+
+    function moveBottomNavIndicator(activeBtn) {
+        const indicator = document.getElementById('bottom-nav-indicator');
+        const nav = document.getElementById('bottom-nav');
+        if (!indicator || !nav || !activeBtn) return;
+        const navRect = nav.getBoundingClientRect();
+        const btnRect = activeBtn.getBoundingClientRect();
+        const leftOffset = Math.max(8, btnRect.left - navRect.left);
+        indicator.style.width = `${btnRect.width}px`;
+        indicator.style.transform = `translateX(${leftOffset - 8}px)`;
+    }
+
+    function moveGameTabIndicator(activeBtn) {
+        const indicator = document.getElementById('game-tab-indicator');
+        const nav = document.getElementById('game-tabs');
+        if (!indicator || !nav || !activeBtn) return;
+        const navRect = nav.getBoundingClientRect();
+        const btnRect = activeBtn.getBoundingClientRect();
+        const leftOffset = Math.max(6, btnRect.left - navRect.left);
+        indicator.style.width = `${btnRect.width}px`;
+        indicator.style.transform = `translateX(${leftOffset - 6}px)`;
+    }
+
+    function showPage(page, persist = true) {
+        const validPages = ['home', 'games', 'decision', 'settings'];
+        const safePage = validPages.includes(page) ? page : 'home';
+        document.querySelectorAll('.spa-page').forEach(p => p.classList.remove('active-page'));
+        const target = document.getElementById(`${safePage}-page`);
+        if (target) target.classList.add('active-page');
+        let activeBtn = null;
+        document.querySelectorAll('.bottom-nav-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.page === safePage);
+            if (btn.dataset.page === safePage) activeBtn = btn;
+        });
+        moveBottomNavIndicator(activeBtn);
+        if (safePage === 'settings') {
+            const su = document.getElementById('settings-user');
+            if (su) su.innerText = loggedInUser || '-';
+        }
+        if (safePage === 'decision') loadDecisionRoom();
+        if (persist) localStorage.setItem(ACTIVE_PAGE_KEY, safePage);
+    }
+
     function buildWordleKeyboardState(ui) {
         const state = {};
         const priority = { inactive: 0, absent: 1, present: 2, correct: 3 };
@@ -477,7 +1562,7 @@
         const state = {};
         ui.correctLetters.forEach(ch => {
             const k = normalizeTrLower(ch);
-            if (k) state[k] = 'present';
+            if (k) state[k] = 'correct';
         });
         ui.wrongLetters.forEach(ch => {
             const k = normalizeTrLower(ch);
@@ -490,9 +1575,9 @@
         const root = document.getElementById(containerId);
         if (!root) return;
         root.innerHTML = '';
-        TURKISH_KEYBOARD_ROWS.forEach(row => {
+        TURKISH_KEYBOARD_ROWS.forEach((row, rowIdx) => {
             const rowEl = document.createElement('div');
-            rowEl.className = 'vk-row';
+            rowEl.className = `vk-row vk-row-${rowIdx + 1}`;
             row.forEach(letter => {
                 const key = normalizeTrLower(letter);
                 const btn = document.createElement('button');
@@ -531,13 +1616,32 @@
 
     function activateSession(user) {
         loggedInUser = user;
+        if (!window.__paletteHotkeyBound) {
+            document.addEventListener('keydown', handlePaletteModalKeydown);
+            window.__paletteHotkeyBound = true;
+        }
+        decisionSelectedCategoryIds = loadDecisionSelectedCategoryIds();
+        decisionActiveTab = localStorage.getItem(LOCAL_DECISION_TAB_KEY) || 'vote';
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-site').style.display = 'block';
-        document.getElementById('game-tabs').style.display = 'flex';
-        document.getElementById('xox-panel').classList.add('active-panel');
+        document.getElementById('app-shell').style.display = 'block';
         document.getElementById('music-player').style.display = 'flex';
         document.getElementById('kpss-box').style.display = 'block';
-        fetchStats(); initXOX(); initWordle(); initHangman();
+        const savedPage = localStorage.getItem(ACTIVE_PAGE_KEY) || 'home';
+        const savedGame = localStorage.getItem(ACTIVE_GAME_TAB_KEY) || 'xox';
+        showPage(savedPage, false);
+        showTab(savedGame, null, true);
+        setTimeout(() => {
+            moveGameTabIndicator(document.querySelector('.tab-btn.active'));
+        }, 0);
+        fetchStats();
+        initXOX();
+        initWordle();
+        initHangman();
+        initBattleship();
+        initThemeRealtime();
+        loadUserSettings();
+        loadDecisionRoom();
+        initDecisionRealtime();
     }
 
     function setWordleInputState(disabled) {
@@ -555,12 +1659,12 @@
     }
 
     async function fetchWordleAndRender() {
-        const { data } = await _supabase.from('wordle_durumu').select('*').eq('id', 1).single();
+        const data = await fetchOrCreateSingletonRow('wordle_durumu', getDefaultWordleRow());
         if (data) renderWordle(data);
     }
 
     async function fetchHangmanAndRender() {
-        const { data } = await _supabase.from('adam_asmaca_durumu').select('*').eq('id', 1).single();
+        const data = await fetchOrCreateSingletonRow('adam_asmaca_durumu', getDefaultHangmanRow());
         if (data) renderHangman(data);
     }
 
@@ -582,6 +1686,10 @@
     }
 
     async function updateRowWithDebug(table, payload, rowId = 1) {
+        if (!Number.isFinite(Number(rowId))) {
+            console.warn(`DB update skipped [${table}] invalid row id`, rowId, payload);
+            return { data: null, error: { message: 'invalid-row-id' } };
+        }
         const serializedPayload = serializePayloadForSupabase(payload);
         const result = await _supabase.from(table).update(serializedPayload).eq('id', rowId);
         if (result.error) {
@@ -674,11 +1782,1689 @@
         `;
     }
 
-    function showTab(t, evt) {
+    function normalizeDecisionState(rawState) {
+        const categories = (rawState?.categories || []).map(c => {
+            return {
+                ...c,
+                created_by: fromSafeDbUser(c.created_by),
+                allowed_modes: ['rating']
+            };
+        });
+        const items = (rawState?.items || []).map(i => ({
+            ...i,
+            label: i.label || i.item_name || i.ad || '',
+            created_by: fromSafeDbUser(i.created_by)
+        }));
+        const ratings = (rawState?.ratings || []).map(r => ({
+            ...r,
+            user_id: fromSafeDbUser(r.user_id || r.user_name),
+            rating: r.rating ?? null
+        }));
+        return { categories, items, ratings };
+    }
+
+    function getDecisionCategory(categoryId) {
+        return (decisionStateCache?.categories || []).find(c => Number(c.id) === Number(categoryId)) || null;
+    }
+
+    function isDecisionCategoryReady(category) {
+        if (!category) return false;
+        return String(category.status || '').toLowerCase() === 'ready';
+    }
+
+    function getDecisionApprovalState(categoryId) {
+        const cat = getDecisionCategory(categoryId);
+        if (!cat) return { mine: false, other: false, ready: false };
+        const mineField = loggedInUser === 'Begüm' ? 'p1_approved' : 'p2_approved';
+        const otherField = mineField === 'p1_approved' ? 'p2_approved' : 'p1_approved';
+        return {
+            mine: Boolean(cat[mineField]),
+            other: Boolean(cat[otherField]),
+            ready: isDecisionCategoryReady(cat)
+        };
+    }
+
+    function isDecisionFullyApproved(category) {
+        return Boolean(category && category.p1_approved && category.p2_approved);
+    }
+
+    function getDecisionAllowedModes(categoryId) {
+        return ['rating'];
+    }
+
+    function normalizeDecisionMode(mode) {
+        return 'rating';
+    }
+
+    function getSelectedDecisionModesFromCreateForm() {
+        return ['rating'];
+    }
+
+    function loadDecisionFlowState() {
+        return parseJsonField(localStorage.getItem(LOCAL_DECISION_FLOW_KEY), {
+            modeByCategory: {},
+            randomSeedByCategory: {}
+        });
+    }
+
+    function loadDecisionSelectedCategoryIds() {
+        const loaded = parseJsonField(localStorage.getItem(LOCAL_DECISION_SELECTED_KEY), {});
+        return {
+            manage: Number(loaded.manage || 0),
+            vote: Number(loaded.vote || 0),
+            results: Number(loaded.results || 0)
+        };
+    }
+
+    function saveDecisionSelectedCategoryIds(nextState) {
+        decisionSelectedCategoryIds = {
+            manage: Number(nextState.manage || 0),
+            vote: Number(nextState.vote || 0),
+            results: Number(nextState.results || 0)
+        };
+        localStorage.setItem(LOCAL_DECISION_SELECTED_KEY, JSON.stringify(decisionSelectedCategoryIds));
+    }
+
+    function saveDecisionFlowState(nextState) {
+        localStorage.setItem(LOCAL_DECISION_FLOW_KEY, JSON.stringify(nextState));
+    }
+
+    function switchDecisionTab(tab) {
+        decisionActiveTab = ['vote', 'results', 'manage'].includes(tab) ? tab : 'vote';
+        localStorage.setItem(LOCAL_DECISION_TAB_KEY, decisionActiveTab);
+        const managePanel = document.getElementById('decision-manage-panel');
+        const votePanel = document.getElementById('decision-vote-panel');
+        const resultsPanel = document.getElementById('decision-results-panel');
+        if (managePanel) {
+            managePanel.style.display = decisionActiveTab === 'manage' ? 'block' : 'none';
+            managePanel.classList.toggle('decision-panel-enter', decisionActiveTab === 'manage');
+        }
+        if (votePanel) {
+            votePanel.style.display = decisionActiveTab === 'vote' ? 'block' : 'none';
+            votePanel.classList.toggle('decision-panel-enter', decisionActiveTab === 'vote');
+        }
+        if (resultsPanel) {
+            resultsPanel.style.display = decisionActiveTab === 'results' ? 'block' : 'none';
+            resultsPanel.classList.toggle('decision-panel-enter', decisionActiveTab === 'results');
+        }
+        document.querySelectorAll('.decision-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.dtab === decisionActiveTab);
+        });
+        renderDecisionBoard();
+        const activeId = getDecisionSelectedCategoryId();
+        if (decisionActiveTab === 'vote' && activeId && getDecisionItems(activeId).length) {
+            startDecisionScoring();
+        }
+        if (decisionActiveTab === 'results') renderDecisionResults();
+    }
+
+    function getDecisionSelectedCategoryId(scope = 'active') {
+        const resolvedScope = scope === 'active' ? decisionActiveTab : scope;
+        return Number(decisionSelectedCategoryIds?.[resolvedScope] || 0);
+    }
+
+    function sortDecisionCategories(cats) {
+        return [...(cats || [])].sort((a, b) => {
+            const aTs = new Date(a?.created_at || 0).getTime() || 0;
+            const bTs = new Date(b?.created_at || 0).getTime() || 0;
+            if (aTs !== bTs) return bTs - aTs;
+            return Number(b.id || 0) - Number(a.id || 0);
+        });
+    }
+
+    function closeAllDecisionDropdowns() {
+        document.querySelectorAll('.decision-dropdown').forEach(node => node.classList.remove('open'));
+    }
+
+    function renderDecisionDropdown(rootId, options, selectedId, onSelect) {
+        const root = document.getElementById(rootId);
+        if (!root) return;
+        const safeOptions = Array.isArray(options) ? options : [];
+        const selected = safeOptions.find(o => Number(o.id) === Number(selectedId)) || safeOptions[0] || null;
+        root.className = 'decision-dropdown';
+        root.innerHTML = `
+            <button type="button" class="decision-dropdown-btn" data-role="toggle">
+                <span>${selected ? escapeHtml(selected.label) : 'Kategori seç'}</span>
+                <span>▾</span>
+            </button>
+            <div class="decision-dropdown-menu">
+                ${safeOptions.map(o => `
+                    <button type="button" class="decision-dropdown-item ${Number(o.id) === Number(selected?.id) ? 'active' : ''}" data-id="${Number(o.id)}">
+                        <span>${escapeHtml(o.label)}</span>
+                    </button>
+                `).join('')}
+            </div>
+        `;
+        const toggleBtn = root.querySelector('[data-role="toggle"]');
+        if (toggleBtn) {
+            toggleBtn.onclick = (e) => {
+                e.stopPropagation();
+                const willOpen = !root.classList.contains('open');
+                closeAllDecisionDropdowns();
+                root.classList.toggle('open', willOpen);
+            };
+        }
+        root.querySelectorAll('.decision-dropdown-item').forEach(btn => {
+            btn.onclick = () => {
+                const pickedId = Number(btn.dataset.id || 0);
+                closeAllDecisionDropdowns();
+                onSelect(pickedId);
+            };
+        });
+    }
+
+    function getDecisionItems(categoryId) {
+        return (decisionStateCache?.items || []).filter(item => Number(item.category_id) === Number(categoryId));
+    }
+
+    function getDecisionRatings(categoryId, itemId) {
+        return (decisionStateCache?.ratings || []).filter(r => Number(r.category_id) === Number(categoryId) && Number(r.item_id) === Number(itemId));
+    }
+
+    function getDecisionMyRows(categoryId) {
+        return (decisionStateCache?.ratings || []).filter(r => Number(r.category_id) === Number(categoryId) && r.user_id === loggedInUser);
+    }
+
+    function getDecisionMode() {
+        return 'rating';
+    }
+
+    function setDecisionMode(categoryId, mode) {
+        const allowed = getDecisionAllowedModes(categoryId);
+        const safeMode = normalizeDecisionMode(mode);
+        if (!allowed.includes(safeMode)) return;
+        const flow = loadDecisionFlowState();
+        flow.modeByCategory[categoryId] = safeMode;
+        saveDecisionFlowState(flow);
+        resetDecisionRuntimeState(categoryId, safeMode);
+    }
+
+    function getDecisionUnscoredItems(categoryId) {
+        const items = getDecisionItems(categoryId);
+        const mine = getDecisionMyRows(categoryId);
+        const byItem = new Map(mine.map(r => [Number(r.item_id), r]));
+        return items.filter(item => {
+            const row = byItem.get(Number(item.id));
+            return !row || row.rating === null || row.rating === undefined;
+        });
+    }
+
+    function getDecisionProgress(categoryId) {
+        const total = getDecisionItems(categoryId).length;
+        const mine = getDecisionMyRows(categoryId);
+        const done = mine.filter(r => r.rating !== null && r.rating !== undefined).length;
+        return { done, total };
+    }
+
+    function getDecisionModeProgress(categoryId) {
+        const base = getDecisionProgress(categoryId);
+        return { ...base, completed: base.total > 0 && base.done >= base.total };
+    }
+
+    function pickRandomBySeed(list, seed) {
+        if (!list.length) return null;
+        const idx = Math.abs(seed) % list.length;
+        return list[idx];
+    }
+
+    function seededShuffleIds(ids, seed) {
+        const arr = [...ids];
+        let s = Math.abs(Number(seed) || Date.now());
+        for (let i = arr.length - 1; i > 0; i--) {
+            s = (s * 1664525 + 1013904223) % 4294967296;
+            const j = s % (i + 1);
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function buildTournamentMatches(ids) {
+        const matches = [];
+        for (let i = 0; i < ids.length; i += 2) {
+            matches.push([Number(ids[i] || 0), Number(ids[i + 1] || 0) || null]);
+        }
+        return matches;
+    }
+
+    function createTournamentState(ids) {
+        const seeded = seededShuffleIds(ids, Date.now() + ids.length);
+        return {
+            rounds: [buildTournamentMatches(seeded)],
+            roundIndex: 0,
+            matchIndex: 0,
+            winners: [],
+            championId: null
+        };
+    }
+
+    function advanceTournamentRound(state) {
+        const round = state.rounds[state.roundIndex] || [];
+        if (state.matchIndex < round.length) return;
+        if ((state.winners || []).length <= 1) {
+            state.championId = Number(state.winners?.[0] || 0) || null;
+            return;
+        }
+        const nextMatches = buildTournamentMatches(state.winners);
+        state.rounds.push(nextMatches);
+        state.roundIndex += 1;
+        state.matchIndex = 0;
+        state.winners = [];
+    }
+
+    function normalizeTournamentByes(state) {
+        const round = state.rounds[state.roundIndex] || [];
+        while (state.matchIndex < round.length) {
+            const pair = round[state.matchIndex] || [];
+            const a = Number(pair[0] || 0);
+            const b = pair[1] === null ? null : Number(pair[1] || 0);
+            if (a && b !== null) break;
+            if (a) state.winners.push(a);
+            state.matchIndex += 1;
+        }
+        advanceTournamentRound(state);
+    }
+
+    function resetDecisionRuntimeState(categoryId, mode) {
+        decisionRuntimeState = {
+            categoryId: Number(categoryId) || 0,
+            mode: mode || 'rating',
+            items: [],
+            ratings: [],
+            currentIndex: 0,
+            blindOrder: [],
+            blindFilledSlots: {},
+            blindCurrentItemId: 0
+        };
+    }
+
+    function ensureDecisionRuntimeState(categoryId, mode, items) {
+        const catId = Number(categoryId) || 0;
+        const safeMode = mode || 'rating';
+        const changed = decisionRuntimeState.categoryId !== catId || decisionRuntimeState.mode !== safeMode;
+        if (changed) resetDecisionRuntimeState(catId, safeMode);
+
+        decisionRuntimeState.items = Array.isArray(items) ? [...items] : [];
+        decisionRuntimeState.ratings = (decisionStateCache?.ratings || []).filter(r => Number(r.category_id) === catId);
+    }
+
+    function decisionItemLabel(item) {
+        return item?.label || item?.ad || `Eleman ${item?.id || '-'}`;
+    }
+
+    function showDecisionNotice(message, isError = false) {
+        const status = document.getElementById('decision-global-status');
+        if (!status) return;
+        status.style.color = isError ? '#b91c1c' : '#475569';
+        status.innerText = message;
+    }
+
+    function canDeleteDecisionCategory(categoryId) {
+        const cat = getDecisionCategory(categoryId);
+        return Boolean(cat && cat.created_by === loggedInUser);
+    }
+
+    function canDeleteDecisionItem(item) {
+        return Boolean(item && item.created_by === loggedInUser);
+    }
+
+    async function ensureDecisionPendingRows(categoryId) {
+        const items = getDecisionItems(categoryId);
+        const mine = getDecisionMyRows(categoryId);
+        const mineSet = new Set(mine.map(r => Number(r.item_id)));
+        for (const item of items) {
+            if (mineSet.has(Number(item.id))) continue;
+            await DataServices.decision.upsertRating({
+                category_id: Number(categoryId),
+                item_id: Number(item.id),
+                user_id: loggedInUser,
+                rating: null,
+                is_completed: false
+            });
+        }
+    }
+
+    function renderDecisionApprovalStatus(categoryId) {
+        const status = document.getElementById('decision-approval-status');
+        const approveBtn = document.getElementById('decision-approve-btn');
+        if (!status || !approveBtn) return;
+        const cat = getDecisionCategory(categoryId);
+        if (!cat) {
+            status.innerText = 'Onay durumu: -';
+            approveBtn.disabled = true;
+            approveBtn.innerText = 'Hazırım';
+            return;
+        }
+        const ready = isDecisionCategoryReady(cat);
+        status.innerText = ready ? 'Onay durumu: Hazır' : 'Onay durumu: Bekleniyor';
+        const { mine } = getDecisionApprovalState(categoryId);
+        approveBtn.disabled = ready || mine;
+        approveBtn.innerText = ready ? 'Hazır' : (mine ? 'Onaylandı' : 'Hazırım');
+    }
+
+    function renderDecisionSelectors() {
+        const voteOpenList = document.getElementById('decision-therapy-open-list');
+        const voteCompletedList = document.getElementById('decision-therapy-completed-list');
+        const manageList = document.getElementById('decision-category-list');
+        const resultsList = document.getElementById('decision-results-list');
+        if (!voteOpenList || !voteCompletedList || !manageList || !resultsList) return;
+        const previous = loadDecisionSelectedCategoryIds();
+        if (decisionLoadState === 'loading') {
+            voteOpenList.innerHTML = '<div class="decision-loading">Onaylı terapi başlıkları yükleniyor...</div>';
+            voteCompletedList.innerHTML = '<div class="decision-loading">Puanlanan başlıklar yükleniyor...</div>';
+            manageList.innerHTML = '<div class="decision-loading">Kategoriler yükleniyor...</div>';
+            resultsList.innerHTML = '<div class="decision-loading">Sonuçlar yükleniyor...</div>';
+            return;
+        }
+        const cats = sortDecisionCategories(decisionStateCache?.categories || []);
+        const readyCats = sortDecisionCategories(cats.filter(isDecisionCategoryReady));
+        const openCats = readyCats.filter(c => {
+            const progress = getDecisionProgress(Number(c.id));
+            return progress.total > 0 && progress.done < progress.total;
+        });
+        const completedCats = readyCats.filter(c => {
+            const progress = getDecisionProgress(Number(c.id));
+            return progress.total > 0 && progress.done >= progress.total;
+        });
+        const resultCats = readyCats.filter(c => {
+            const catId = Number(c.id);
+            const total = getDecisionItems(catId).length;
+            return total > 0;
+        });
+        if (decisionLoadState === 'error' && !cats.length) {
+            voteOpenList.innerHTML = '<div>Hata oluştu</div>';
+            voteCompletedList.innerHTML = '<div>Hata oluştu</div>';
+            manageList.innerHTML = '<div>Hata oluştu</div>';
+            resultsList.innerHTML = '<div>Hata oluştu</div>';
+            return;
+        }
+        const manageId = previous.manage && cats.some(c => Number(c.id) === previous.manage) ? previous.manage : Number(cats[0]?.id || 0);
+        const voteId = previous.vote && readyCats.some(c => Number(c.id) === previous.vote) ? previous.vote : Number(readyCats[0]?.id || 0);
+        const resultsId = previous.results && resultCats.some(c => Number(c.id) === previous.results) ? previous.results : Number(resultCats[0]?.id || 0);
+
+        saveDecisionSelectedCategoryIds({ manage: manageId, vote: voteId, results: resultsId });
+
+        renderDecisionCategoryList(cats, manageId);
+
+        voteOpenList.innerHTML = openCats.length
+            ? openCats.map(c => `<button type="button" class="decision-item" onclick="openDecisionVoteModal(${Number(c.id)})" style="text-align:left; cursor:pointer;"><div class="decision-item-head"><div style="font-weight:800; color:#334155;">${escapeHtml(c.name || c.baslik || `Kategori ${c.id}`)}</div></div><div class="decision-votes">🔮 Henüz puanlamadığınız konular</div></button>`).join('')
+            : '<div class="decision-item">🔮 Puanlanabilecek kategori bulunmuyor.</div>';
+
+        voteCompletedList.innerHTML = completedCats.length
+            ? completedCats.map(c => `<button type="button" class="decision-item" onclick="openDecisionVoteModal(${Number(c.id)})" style="text-align:left; cursor:pointer;"><div class="decision-item-head"><div style="font-weight:800; color:#334155;">${escapeHtml(c.name || c.baslik || `Kategori ${c.id}`)}</div></div><div class="decision-votes">✅ Tamamladığınız konular</div></button>`).join('')
+            : '<div class="decision-item">Henüz tamamladığın bir terapi konusu yok.</div>';
+
+        resultsList.innerHTML = resultCats.length
+            ? resultCats.map(c => {
+                const label = c.name || c.baslik || `Kategori ${c.id}`;
+                return `<button type="button" class="decision-item" onclick="openDecisionResultsModal(${Number(c.id)})" style="text-align:left; cursor:pointer;"><div style="font-weight:800; color:#334155;">${escapeHtml(label)}</div><div class="decision-votes">Sonuçları aç</div></button>`;
+            }).join('')
+            : '<div class="decision-item">Henüz analiz edilecek sonuç yok.</div>';
+
+        saveDecisionSelectedCategoryIds({ ...decisionSelectedCategoryIds, results: resultsId });
+    }
+
+    function renderDecisionCategoryList(cats, selectedId) {
+        const root = document.getElementById('decision-category-list');
+        if (!root) return;
+        if (!cats.length) {
+            root.innerHTML = '<div class="decision-item">Henüz kategori yok.</div>';
+            return;
+        }
+        root.innerHTML = cats.map(c => {
+            const catId = Number(c.id);
+            const isActive = Number(selectedId) === catId;
+            const ready = isDecisionCategoryReady(c);
+            const mine = getDecisionApprovalState(catId).mine;
+            const locked = isDecisionFullyApproved(c);
+            return `
+                <div class="decision-item clickable ${isActive ? 'decision-panel-enter' : ''}" style="text-align:left;" onclick="openDecisionCategoryModal(${catId})">
+                    <div class="decision-item-head">
+                        <div style="font-weight:800; color:#334155;">${escapeHtml(c.name || c.baslik || `Kategori ${catId}`)}</div>
+                        <button type="button" class="decision-approve-toggle ${mine ? 'active' : ''}" onclick="toggleDecisionCategoryReadyFromList(event, ${catId})" title="${locked ? 'Kilitli onay' : 'Onay ver'}" ${locked ? 'disabled' : ''}>✓</button>
+                    </div>
+                    <div class="decision-votes">Durum: ${ready ? 'Hazır' : 'Hazırlanıyor'}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function openDecisionCategoryModal(categoryId = 0) {
+        decisionModalCategoryId = Number(categoryId || 0);
+        if (decisionModalCategoryId) {
+            saveDecisionSelectedCategoryIds({ ...decisionSelectedCategoryIds, manage: decisionModalCategoryId });
+        }
+        renderDecisionCategoryModal();
+        const modal = document.getElementById('decision-category-modal');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function closeDecisionCategoryModal() {
+        const modal = document.getElementById('decision-category-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function renderDecisionCategoryModal() {
+        const cat = getDecisionCategory(decisionModalCategoryId);
+        const title = document.getElementById('decision-category-modal-title');
+        const input = document.getElementById('decision-category-modal-input');
+        const actions = document.getElementById('decision-modal-actions');
+        const itemManage = document.getElementById('decision-modal-item-manage');
+        const lockNote = document.getElementById('decision-modal-lock-note');
+        const addBtn = document.getElementById('decision-modal-add-item-btn');
+        const delBtn = document.getElementById('decision-modal-delete-btn');
+        const list = document.getElementById('decision-modal-item-list');
+        if (!title || !input || !actions || !itemManage || !lockNote || !addBtn || !delBtn || !list) return;
+
+        const isNew = !cat;
+        const ready = isDecisionCategoryReady(cat);
+        const locked = isDecisionFullyApproved(cat);
+        title.innerText = isNew ? 'Yeni Kategori' : `Kategori: ${cat.name || cat.baslik || `#${cat.id}`}`;
+        input.value = isNew ? '' : (cat.name || cat.baslik || '');
+
+        actions.style.display = isNew ? 'none' : 'flex';
+        itemManage.style.display = isNew ? 'none' : 'flex';
+        list.style.display = isNew ? 'none' : 'grid';
+        addBtn.disabled = locked || isNew;
+        addBtn.style.display = locked ? 'none' : 'inline-flex';
+        lockNote.style.display = locked ? 'block' : 'none';
+        lockNote.innerText = '🔮 Bu terapi konusu her iki tarafça onaylandığı için artık eleman eklenemez.';
+        delBtn.style.display = cat && canDeleteDecisionCategory(cat.id) && !ready ? 'inline-flex' : 'none';
+
+        const items = cat ? getDecisionItems(cat.id) : [];
+        list.innerHTML = items.length
+            ? items.map(item => `<div class="decision-item"><div class="decision-item-head"><div style="font-weight:700;">${escapeHtml(decisionItemLabel(item))}</div>${canDeleteDecisionItem(item) && !ready ? `<button class="decision-item-del" onclick="deleteDecisionItemFromModal(${Number(item.id)})">X</button>` : ''}</div></div>`).join('')
+            : '<div class="decision-item">Henüz eleman yok.</div>';
+    }
+
+    async function saveDecisionCategoryModal() {
+        const input = document.getElementById('decision-category-modal-input');
+        const name = input?.value.trim();
+        if (!name) return;
+        const modes = ['rating'];
+
+        if (!decisionModalCategoryId) {
+            const result = await DataServices.decision.addCategory(name, loggedInUser, modes);
+            if (result.error) {
+                console.error('decision category create error', result.error);
+            }
+        } else {
+            const { error } = await DataServices.decision.updateCategory(decisionModalCategoryId, { name, allowed_modes: modes });
+            if (error) console.error('decision category update error', error);
+        }
+        await loadDecisionRoom();
+        const newest = sortDecisionCategories(decisionStateCache?.categories || []).find(c => (c.name || c.baslik) === name);
+        if (newest?.id) {
+            decisionModalCategoryId = Number(newest.id);
+            saveDecisionSelectedCategoryIds({ ...decisionSelectedCategoryIds, manage: Number(newest.id), vote: decisionSelectedCategoryIds.vote || Number(newest.id) });
+        }
+        renderDecisionCategoryModal();
+    }
+
+    async function addDecisionItemFromModal() {
+        const catId = Number(decisionModalCategoryId || 0);
+        if (!catId) return;
+        const itemInput = document.getElementById('decision-modal-item-input');
+        const itemLabel = itemInput?.value.trim();
+        if (!itemLabel) return;
+        const cat = getDecisionCategory(catId);
+        if (isDecisionFullyApproved(cat)) {
+            showDecisionNotice('🔮 Bu terapi konusu her iki tarafça onaylandığı için artık eleman eklenemez.', true);
+            return;
+        }
+        const result = await DataServices.decision.addItem(catId, itemLabel, loggedInUser);
+        if (result.error) console.error('decision item create error', result.error);
+        if (itemInput) itemInput.value = '';
+        saveDecisionSelectedCategoryIds({ ...decisionSelectedCategoryIds, manage: catId });
+        await loadDecisionRoom();
+        decisionModalCategoryId = catId;
+        renderDecisionCategoryModal();
+    }
+
+    async function deleteDecisionItemFromModal(itemId) {
+        const item = (decisionStateCache?.items || []).find(i => Number(i.id) === Number(itemId));
+        if (!item) return;
+        const catId = Number(item.category_id || decisionModalCategoryId || 0);
+        const { error } = await DataServices.decision.deleteItem(itemId, loggedInUser);
+        if (error) console.error('decision item delete error', error);
+        saveDecisionSelectedCategoryIds({ ...decisionSelectedCategoryIds, manage: catId });
+        await loadDecisionRoom();
+        decisionModalCategoryId = catId;
+        renderDecisionCategoryModal();
+    }
+
+    async function deleteDecisionCategoryFromModal() {
+        const catId = Number(decisionModalCategoryId || 0);
+        if (!catId) return;
+        const { error } = await DataServices.decision.deleteCategory(catId, loggedInUser);
+        if (error) console.error('decision category delete error', error);
+        decisionModalCategoryId = 0;
+        await loadDecisionRoom();
+        closeDecisionCategoryModal();
+    }
+
+    async function toggleDecisionCategoryReadyFromList(event, categoryId) {
+        if (event?.stopPropagation) event.stopPropagation();
+        const catId = Number(categoryId || 0);
+        if (!catId) return;
+        const category = getDecisionCategory(catId);
+        if (!category) return;
+        if (isDecisionFullyApproved(category)) return;
+        const mineField = loggedInUser === 'Begüm' ? 'p1_approved' : 'p2_approved';
+        const otherField = mineField === 'p1_approved' ? 'p2_approved' : 'p1_approved';
+        const nextMine = !Boolean(category[mineField]);
+        const patch = { [mineField]: nextMine, status: (nextMine && Boolean(category[otherField])) ? 'ready' : 'draft' };
+        const { error } = await DataServices.decision.updateCategory(catId, patch);
+        if (error) {
+            console.error('decision category ready toggle error', error);
+            return;
+        }
+        saveDecisionSelectedCategoryIds({ ...decisionSelectedCategoryIds, manage: catId });
+        await loadDecisionRoom();
+    }
+
+    function openDecisionResultsModal(categoryId) {
+        decisionResultsModalCategoryId = Number(categoryId || 0);
+        saveDecisionSelectedCategoryIds({ ...decisionSelectedCategoryIds, results: decisionResultsModalCategoryId });
+        renderDecisionResultsModal();
+        const modal = document.getElementById('decision-results-modal');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function closeDecisionResultsModal() {
+        const modal = document.getElementById('decision-results-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function openDecisionVoteModal(categoryId) {
+        const catId = Number(categoryId || 0);
+        if (!catId) return;
+        saveDecisionSelectedCategoryIds({ ...decisionSelectedCategoryIds, vote: catId, results: decisionSelectedCategoryIds.results || catId });
+        resetDecisionRuntimeState(catId, 'rating');
+        renderDecisionVoteModal();
+        const modal = document.getElementById('decision-vote-modal');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function closeDecisionVoteModal() {
+        const modal = document.getElementById('decision-vote-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function renderDecisionVoteModal() {
+        const catId = getDecisionSelectedCategoryId('vote');
+        const cat = getDecisionCategory(catId);
+        const title = document.getElementById('decision-vote-modal-title');
+        const progress = document.getElementById('decision-vote-modal-progress');
+        if (title) title.innerText = cat ? '🔮 Bu konuyu puanlamaya hazır mısınız?' : 'Terapi Puanlama';
+        const { done, total } = getDecisionProgress(catId);
+        if (progress) progress.innerText = `İlerleme: ${done}/${total}`;
+        renderDecisionRatingPanel(catId, 'decision-vote-rating-wrap');
+    }
+
+    function renderDecisionModeControls(categoryId) {
+        const row = document.getElementById('decision-mode-row');
+        if (!row) return;
+        row.innerHTML = '<span class="decision-chip active">Puanlama</span>';
+    }
+
+    function renderDecisionProgress(categoryId) {
+        const node = document.getElementById('decision-progress');
+        if (!node) return;
+        const { done, total } = getDecisionModeProgress(categoryId);
+        node.innerText = `İlerleme: ${done}/${total} tamamlandı`;
+    }
+
+    function renderDecisionLiveBubble(categoryId, itemIds) {
+        const bubble = document.getElementById('decision-live-bubble');
+        if (!bubble) return;
+        const targetIds = Array.isArray(itemIds) ? itemIds.map(Number) : [Number(itemIds)];
+        const opponent = switchUser(loggedInUser);
+        const ratings = (decisionStateCache?.ratings || []).filter(r =>
+            Number(r.category_id) === Number(categoryId) &&
+            r.user_id === opponent &&
+            targetIds.includes(Number(r.item_id)) &&
+            r.rating !== null && r.rating !== undefined
+        );
+        if (!ratings.length) {
+            bubble.style.display = 'none';
+            bubble.innerText = '';
+            return;
+        }
+        const text = ratings.map(r => `#${r.item_id}: ${r.rating}`).join(' | ');
+        bubble.style.display = 'block';
+        bubble.innerText = `${opponent} puanları: ${text}`;
+    }
+
+    function renderDecisionChampions(categoryId) {
+        const node = document.getElementById('decision-champions');
+        if (!node) return;
+        const items = getDecisionItems(categoryId);
+        if (!items.length) {
+            node.style.display = 'none';
+            return;
+        }
+        const users = ['Begüm', 'Ömer'];
+        const isDoneForAll = users.every(user => {
+            const scored = (decisionStateCache?.ratings || []).filter(r =>
+                Number(r.category_id) === Number(categoryId) &&
+                r.user_id === user &&
+                r.rating !== null && r.rating !== undefined
+            ).length;
+            return scored >= items.length;
+        });
+        if (!isDoneForAll) {
+            node.style.display = 'none';
+            return;
+        }
+        const rows = items.map(item => {
+            const votes = getDecisionRatings(categoryId, item.id).filter(v => v.rating !== null && v.rating !== undefined);
+            const avg = votes.length ? (votes.reduce((a, b) => a + Number(b.rating || 0), 0) / votes.length) : 0;
+            return { item, avg };
+        }).sort((a, b) => b.avg - a.avg);
+        node.style.display = 'block';
+        node.innerHTML = `
+            <div style="font-weight:800; color:#334155; margin-bottom:8px;">🏆 Şampiyonlar Listesi</div>
+            ${rows.map((row, index) => `<div class="champion-item"><span>${index + 1}. ${escapeHtml(decisionItemLabel(row.item))}</span><b>${row.avg.toFixed(2)}</b></div>`).join('')}
+        `;
+    }
+
+    function renderDecisionRatingPanel(categoryId, wrapId = 'decision-rating-wrap') {
+        const wrap = document.getElementById(wrapId);
+        if (!wrap) return;
+        const items = getDecisionItems(categoryId);
+        ensureDecisionRuntimeState(categoryId, 'rating', items);
+        const pendingItems = getDecisionUnscoredItems(categoryId);
+        const pendingIds = new Set(pendingItems.map(i => Number(i.id)));
+        let nextIndex = Math.max(0, Number(decisionRuntimeState.currentIndex || 0));
+        while (nextIndex < items.length && !pendingIds.has(Number(items[nextIndex].id))) nextIndex += 1;
+        const nextItem = nextIndex < items.length ? items[nextIndex] : null;
+        if (!items.length) {
+            wrap.style.display = 'none';
+            return;
+        }
+        if (!nextItem) {
+            wrap.style.display = 'block';
+            wrap.innerHTML = '<div style="font-size:0.88rem; color:#16a34a; font-weight:700;">Puanlama tamamlandı.</div>';
+            renderDecisionLiveBubble(categoryId, []);
+            return;
+        }
+        wrap.style.display = 'block';
+        wrap.innerHTML = `
+            <div class="decision-judge-wrap">
+                <div class="decision-judge-item">${escapeHtml(decisionItemLabel(nextItem))}</div>
+                <div style="font-size:0.82rem; color:#64748b; margin-bottom:8px;">Puanı seçtiğin an otomatik kaydedilir.</div>
+                <div class="decision-judge-actions" id="decision-quick-scores"></div>
+            </div>
+        `;
+        const quick = document.getElementById('decision-quick-scores');
+        for (let s = 1; s <= 10; s++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'decision-big-btn';
+            btn.innerText = String(s);
+            btn.onclick = async () => {
+                quick.querySelectorAll('button').forEach(b => { b.disabled = true; });
+                decisionRuntimeState.currentIndex = nextIndex + 1;
+                await submitDecisionRating(categoryId, nextItem.id, s, items.length);
+            };
+            quick.appendChild(btn);
+        }
+    }
+
+    function renderDecisionRatingPanelByMode(categoryId) {
+        renderDecisionRatingPanel(categoryId);
+    }
+
+    function isDecisionCategoryCompleted(categoryId) {
+        const items = getDecisionItems(categoryId);
+        if (!items.length) return false;
+        const users = ['Begüm', 'Ömer'];
+        return users.every(user => {
+            const done = (decisionStateCache?.ratings || []).filter(r =>
+                Number(r.category_id) === Number(categoryId) &&
+                r.user_id === user &&
+                r.rating !== null && r.rating !== undefined
+            ).length;
+            return done >= items.length;
+        });
+    }
+
+    function getDecisionCategoryCompletion(categoryId) {
+        const items = getDecisionItems(categoryId);
+        const total = items.length;
+        const begumDone = (decisionStateCache?.ratings || []).filter(r => Number(r.category_id) === Number(categoryId) && r.user_id === 'Begüm' && r.rating !== null && r.rating !== undefined).length;
+        const omerDone = (decisionStateCache?.ratings || []).filter(r => Number(r.category_id) === Number(categoryId) && r.user_id === 'Ömer' && r.rating !== null && r.rating !== undefined).length;
+        const begumComplete = total > 0 && begumDone >= total;
+        const omerComplete = total > 0 && omerDone >= total;
+        return {
+            total,
+            begumDone,
+            omerDone,
+            bothComplete: begumComplete && omerComplete,
+            waitingMessage: '🔮 Bu konuyu puanlamaya hazır mısınız?'
+        };
+    }
+
+    function getDecisionModeResultMarkup(catId, mode) {
+        const items = getDecisionItems(catId);
+        if (!items.length) return '<div class="decision-votes">Bu kategoride eleman yok.</div>';
+        const completion = getDecisionCategoryCompletion(catId);
+        if (!completion.bothComplete) {
+            return `<div class="decision-votes">${escapeHtml(completion.waitingMessage || '🔮 Bu konuyu puanlamaya hazır mısınız?')}</div>`;
+        }
+        const rows = items.map(item => {
+            const votes = getDecisionRatings(catId, item.id).filter(v => v.rating !== null && v.rating !== undefined);
+            const begum = votes.find(v => v.user_id === 'Begüm')?.rating;
+            const omer = votes.find(v => v.user_id === 'Ömer')?.rating;
+            const avg = ((Number(begum ?? 0) + Number(omer ?? 0)) / 2) || 0;
+            return { item, begum, omer, avg };
+        }).sort((a, b) => b.avg - a.avg);
+        return rows.map((r, i) => `<div class="champion-item"><span>${i + 1}. ${escapeHtml(decisionItemLabel(r.item))}</span><b>Begüm: ${r.begum ?? '-'} | Ömer: ${r.omer ?? '-'} | Ort: ${r.avg.toFixed(2)}</b></div>`).join('');
+    }
+
+    function renderDecisionResultsModal(activeMode = null) {
+        const catId = Number(decisionResultsModalCategoryId || 0);
+        const category = getDecisionCategory(catId);
+        const title = document.getElementById('decision-results-modal-title');
+        const content = document.getElementById('decision-results-modal-content');
+        if (!title || !content) return;
+        if (!category) {
+            title.innerText = 'Sonuçlar';
+            content.innerHTML = '<div class="decision-votes">Kategori bulunamadı.</div>';
+            return;
+        }
+        title.innerText = `Sonuçlar: ${category.name || category.baslik || `Kategori ${category.id}`}`;
+        content.innerHTML = getDecisionModeResultMarkup(catId, 'rating');
+    }
+
+    function renderDecisionResults() {
+        const list = document.getElementById('decision-results-list');
+        if (!list) return;
+        const cats = sortDecisionCategories((decisionStateCache?.categories || []).filter(c => isDecisionCategoryReady(c)));
+        const analyzed = cats.filter(c => {
+            const catId = Number(c.id);
+            const total = getDecisionItems(catId).length;
+            return total > 0;
+        });
+        list.innerHTML = analyzed.length
+            ? analyzed.map(c => `<button type="button" class="decision-item" onclick="openDecisionResultsModal(${Number(c.id)})" style="text-align:left; cursor:pointer;"><div class="decision-item-head"><div style="font-weight:800; color:#334155;">${escapeHtml(c.name || c.baslik || `Kategori ${c.id}`)}</div></div><div class="decision-votes">Sonuçları aç</div></button>`).join('')
+            : '<div class="decision-item">Henüz analiz edilecek oylama yok.</div>';
+    }
+
+    function renderDecisionBoard() {
+        const listRoot = document.getElementById('decision-list');
+        const status = document.getElementById('decision-global-status');
+        const resultsBtn = document.getElementById('decision-go-results-btn');
+        if (!listRoot || !status) return;
+        const catId = getDecisionSelectedCategoryId();
+        const items = getDecisionItems(catId);
+        if (decisionActiveTab === 'vote' && resultsBtn) resultsBtn.style.display = 'none';
+        if (!catId || !items.length) {
+            listRoot.innerHTML = '<div class="decision-item">Bu kategoride eleman yok.</div>';
+            if (decisionLoadState === 'loading') status.innerText = 'Kategoriler yükleniyor...';
+            else if (decisionLoadState === 'error') status.innerText = `Hata oluştu: ${decisionLastError || 'Veri alınamadı'}`;
+            else if (decisionActiveTab === 'vote') status.innerText = '🔮 Henüz puanlamadığınız konular listesinden bir başlık seçebilirsiniz.';
+            else status.innerText = 'Eleman ekleyip kategoriyi hazır hale getirebilirsin.';
+            const wrap = document.getElementById('decision-rating-wrap');
+            if (wrap) wrap.style.display = 'none';
+            return;
+        }
+        const selectedCategory = getDecisionCategory(catId);
+        if (decisionActiveTab === 'vote' && !isDecisionCategoryReady(selectedCategory)) {
+            const wrap = document.getElementById('decision-rating-wrap');
+            if (wrap) wrap.style.display = 'none';
+            status.innerText = 'Bu kategori henüz hazır değil. Yönetim sekmesinden çift onay gerekiyor.';
+            return;
+        }
+        listRoot.innerHTML = items.map(item => {
+            const votes = getDecisionRatings(catId, item.id);
+            const begumVote = votes.find(v => v.user_id === 'Begüm');
+            const omerVote = votes.find(v => v.user_id === 'Ömer');
+            const mine = votes.find(v => v.user_id === loggedInUser);
+            const minePending = !mine || mine.rating === null || mine.rating === undefined;
+            return `
+                <div class="decision-item">
+                    <div class="decision-item-head">
+                        <div style="font-weight:700;">${escapeHtml(decisionItemLabel(item))}</div>
+                        ${canDeleteDecisionItem(item) ? `<button class="decision-item-del" onclick="deleteDecisionItem(${Number(item.id)})">X</button>` : ''}
+                    </div>
+                    ${decisionActiveTab === 'vote'
+                        ? `<div class="decision-votes" style="color:${minePending ? '#b45309' : '#16a34a'};">${minePending ? 'Sırada' : 'Değerlendirildi'}</div>`
+                        : `<div class="decision-votes">Begüm: <b>${begumVote?.rating ?? '-'}</b> | Ömer: <b>${omerVote?.rating ?? '-'}</b></div>`}
+                </div>
+            `;
+        }).join('');
+        const { done, total, completed } = getDecisionModeProgress(catId);
+        const isDoneAll = completed || isDecisionCategoryCompleted(catId);
+        if (isDoneAll) {
+            status.innerText = 'Oylama tamamlandı.';
+            if (resultsBtn && decisionActiveTab === 'vote') resultsBtn.style.display = 'inline-flex';
+        } else {
+            status.innerText = `Puanlama ilerlemesi: ${done}/${total}`;
+            if (resultsBtn) resultsBtn.style.display = 'none';
+        }
+        if (decisionActiveTab === 'results') renderDecisionResults();
+    }
+
+    async function loadDecisionRoom() {
+        decisionLoadState = 'loading';
+        decisionLastError = '';
+        renderDecisionSelectors();
+        const state = await DataServices.decision.fetchAll();
+        const errors = Array.isArray(state?._errors) ? state._errors : [];
+        decisionLoadState = errors.length ? 'error' : 'ready';
+        decisionLastError = errors.join(' | ');
+        decisionStateCache = normalizeDecisionState(state);
+        renderDecisionSelectors();
+        renderDecisionBoard();
+        switchDecisionTab(decisionActiveTab);
+        const categoryId = getDecisionSelectedCategoryId();
+        if (decisionActiveTab === 'vote' && categoryId && getDecisionItems(categoryId).length) {
+            await startDecisionScoring();
+        }
+    }
+
+    async function refreshDecisionRatings(categoryId) {
+        if (!Number.isFinite(Number(categoryId)) || Number(categoryId) <= 0) return true;
+        const { data, error } = await DataServices.decision.fetchRatingsByCategory(categoryId);
+        if (error) {
+            console.error('decision_ratings refresh error', error);
+            return true;
+        }
+        const keep = (decisionStateCache?.ratings || []).filter(r => Number(r.category_id) !== Number(categoryId));
+        const normalizedIncoming = (data || []).map(r => ({
+            ...r,
+            user_id: fromSafeDbUser(r.user_id || r.user_name),
+            rating: r.rating ?? null
+        }));
+        decisionStateCache = {
+            ...(decisionStateCache || buildDefaultDecisionState()),
+            ratings: [...keep, ...normalizedIncoming]
+        };
+        return true;
+    }
+
+    function initDecisionRealtime() {
+        _supabase.channel('decision-room')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'decision_categories' }, () => loadDecisionRoom())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'decision_items' }, () => loadDecisionRoom())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'decision_ratings' }, () => loadDecisionRoom())
+            .subscribe();
+    }
+
+    async function createDecisionCategory() {
+        const input = document.getElementById('decision-category-input');
+        const categoryName = input?.value.trim();
+        if (!categoryName) return alert('Kategori adı gerekli.');
+        const selectedModes = getSelectedDecisionModesFromCreateForm();
+        const result = await DataServices.decision.addCategory(categoryName, loggedInUser, selectedModes);
+        if (result.error) {
+            decisionLoadState = 'error';
+            decisionLastError = result.error.message || 'Kategori eklenemedi';
+            showDecisionNotice(`Kategori eklenemedi: ${decisionLastError}`, true);
+            return;
+        }
+        if (input) input.value = '';
+        await loadDecisionRoom();
+        const latestCategory = (decisionStateCache?.categories || []).find(c => (c.name || c.baslik) === categoryName);
+        if (latestCategory?.id) setDecisionMode(latestCategory.id, selectedModes[0] || 'rating');
+        showDecisionNotice('Kategori eklendi.');
+    }
+
+    async function createDecisionItem() {
+        const categoryId = getDecisionSelectedCategoryId('manage');
+        const input = document.getElementById('decision-item-input');
+        const itemLabel = input?.value.trim();
+        if (!categoryId) return alert('Önce kategori seç.');
+        if (!itemLabel) return alert('Eleman adı gerekli.');
+        if (isDecisionCategoryReady(getDecisionCategory(categoryId))) {
+            showDecisionNotice('Hazır kategoriye eleman eklenemez. Yeni kategori aç veya hazır durumunu kaldır.', true);
+            return;
+        }
+        const result = await DataServices.decision.addItem(categoryId, itemLabel, loggedInUser);
+        if (result.error) {
+            const errMsg = result.error.message || 'Bilinmeyen hata';
+            if (/column|does not exist|schema/i.test(errMsg)) {
+                showDecisionNotice(`Eleman eklenemedi: ${errMsg}. Şema önbelleği için sayfayı yenile.`, true);
+            } else {
+                showDecisionNotice(`Eleman eklenemedi: ${errMsg}`, true);
+            }
+            return;
+        }
+        if (input) input.value = '';
+        await loadDecisionRoom();
+        showDecisionNotice('Eleman eklendi.');
+    }
+
+    async function deleteDecisionCategory() {
+        const categoryId = getDecisionSelectedCategoryId('manage');
+        if (!categoryId) return;
+        if (!canDeleteDecisionCategory(categoryId)) {
+            showDecisionNotice('Bu kategoriyi sadece oluşturan kişi silebilir.', true);
+            return;
+        }
+        if (isDecisionCategoryReady(getDecisionCategory(categoryId))) {
+            showDecisionNotice('Hazır kategori silinemez.', true);
+            return;
+        }
+        if (!confirm('Kategori silinsin mi? Bu işleme bağlı elemanlar da silinebilir.')) return;
+        const { error } = await DataServices.decision.deleteCategory(categoryId, loggedInUser);
+        if (error) {
+            showDecisionNotice(`Kategori silinemedi: ${error.message || 'Bilinmeyen hata'}`, true);
+            return;
+        }
+        await loadDecisionRoom();
+        showDecisionNotice('Kategori silindi.');
+    }
+
+    async function deleteDecisionItem(itemId) {
+        const item = (decisionStateCache?.items || []).find(i => Number(i.id) === Number(itemId));
+        if (!canDeleteDecisionItem(item)) {
+            showDecisionNotice('Bu elemanı sadece ekleyen kişi silebilir.', true);
+            return;
+        }
+        if (isDecisionCategoryReady(getDecisionCategory(item?.category_id))) {
+            showDecisionNotice('Hazır kategoride eleman silinemez.', true);
+            return;
+        }
+        const { error } = await DataServices.decision.deleteItem(itemId, loggedInUser);
+        if (error) {
+            showDecisionNotice(`Eleman silinemedi: ${error.message || 'Bilinmeyen hata'}`, true);
+            return;
+        }
+        await loadDecisionRoom();
+        showDecisionNotice('Eleman silindi.');
+    }
+
+    async function startDecisionScoring() {
+        const categoryId = getDecisionSelectedCategoryId('vote');
+        if (!categoryId) return false;
+        if (!isDecisionCategoryReady(getDecisionCategory(categoryId))) {
+            showDecisionNotice('Sadece hazır kategoriler oylanabilir.', true);
+            return false;
+        }
+        await ensureDecisionPendingRows(categoryId);
+        const refreshed = await refreshDecisionRatings(categoryId);
+        if (!refreshed) return false;
+        renderDecisionBoard();
+        renderDecisionVoteModal();
+        return true;
+    }
+
+    async function approveDecisionCategory() {
+        const categoryId = getDecisionSelectedCategoryId('manage');
+        if (!categoryId) {
+            showDecisionNotice('Önce kategori seç.', true);
+            return;
+        }
+        const category = getDecisionCategory(categoryId);
+        if (!category) {
+            showDecisionNotice('Kategori bulunamadı.', true);
+            return;
+        }
+        if (isDecisionCategoryReady(category)) {
+            showDecisionNotice('Kategori zaten hazır.');
+            return;
+        }
+        const mineField = loggedInUser === 'Begüm' ? 'p1_approved' : 'p2_approved';
+        const otherField = mineField === 'p1_approved' ? 'p2_approved' : 'p1_approved';
+        if (category[mineField]) {
+            showDecisionNotice('Zaten onay verdin.');
+            return;
+        }
+        const nextPatch = { [mineField]: true };
+        if (category[otherField]) nextPatch.status = 'ready';
+        const { error } = await DataServices.decision.updateCategory(categoryId, nextPatch);
+        if (error) {
+            showDecisionNotice(`Onay kaydedilemedi: ${error.message || 'Bilinmeyen hata'}`, true);
+            return;
+        }
+        await loadDecisionRoom();
+        const updated = getDecisionCategory(categoryId);
+        if (isDecisionCategoryReady(updated)) {
+            showDecisionNotice('Kategori hazır. Oylama Odası sekmesinden başlayabilirsiniz.');
+        } else {
+            showDecisionNotice('Onayın kaydedildi. Diğer kullanıcı onaylayınca kategori hazır olacak.');
+        }
+    }
+
+    async function submitDecisionRating(categoryId, itemId, rating, totalItems, refreshAfter = true) {
+        if (!Number.isFinite(Number(categoryId)) || Number(categoryId) <= 0) {
+            console.error('decision_ratings upsert skipped: invalid category_id', { categoryId, itemId, rating });
+            return false;
+        }
+        const payload = {
+            category_id: Number(categoryId),
+            item_id: Number(itemId),
+            user_id: loggedInUser,
+            rating: Number(rating)
+        };
+        const { error } = await DataServices.decision.upsertRating(payload);
+        if (error) {
+            console.error('decision_ratings upsert error', error, payload);
+            return true;
+        }
+        if (!refreshAfter) return true;
+        const refreshed = await refreshDecisionRatings(categoryId);
+        if (!refreshed) return false;
+        renderDecisionBoard();
+        const remaining = getDecisionUnscoredItems(categoryId).length;
+        if (remaining <= 0) {
+            closeDecisionVoteModal();
+            switchDecisionTab('results');
+            openDecisionResultsModal(categoryId);
+            showDecisionNotice('Oylama tamamlandı. Sonuçlar açıldı.');
+            return true;
+        }
+        renderDecisionVoteModal();
+        return true;
+    }
+
+    function getBattleshipPlayers(state) {
+        const isBegum = loggedInUser === 'Begüm';
+        return {
+            meKey: isBegum ? 'begum' : 'omer',
+            oppKey: isBegum ? 'omer' : 'begum',
+            me: state[isBegum ? 'begum' : 'omer'],
+            opp: state[isBegum ? 'omer' : 'begum']
+        };
+    }
+
+    function cloneState(obj) {
+        return parseJsonField(JSON.stringify(obj), obj);
+    }
+
+    function canPlaceBattleship(state, row, col, len, ignoreCoords = []) {
+        const { me } = getBattleshipPlayers(state);
+        const board = me.board;
+        const dRow = battleshipAxis === 'vertical' ? 1 : 0;
+        const dCol = battleshipAxis === 'horizontal' ? 1 : 0;
+        const ignored = new Set(ignoreCoords.map(([r, c]) => `${r}:${c}`));
+        for (let i = 0; i < len; i++) {
+            const r = row + (dRow * i);
+            const c = col + (dCol * i);
+            if (r >= BATTLESHIP_SIZE || c >= BATTLESHIP_SIZE) return false;
+            if (board[r][c] === 1 && !ignored.has(`${r}:${c}`)) return false;
+        }
+        return true;
+    }
+
+    function buildGhostCells(row, col, len) {
+        const cells = [];
+        const dRow = battleshipAxis === 'vertical' ? 1 : 0;
+        const dCol = battleshipAxis === 'horizontal' ? 1 : 0;
+        for (let i = 0; i < len; i++) {
+            cells.push([row + (dRow * i), col + (dCol * i)]);
+        }
+        return cells;
+    }
+
+    function clearBattleshipGhost() {
+        battleshipGhostCells = [];
+    }
+
+    function isSameShipCoords(a, b) {
+        if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+        const left = a.map(([r, c]) => `${r}:${c}`).sort().join('|');
+        const right = b.map(([r, c]) => `${r}:${c}`).sort().join('|');
+        return left === right;
+    }
+
+    function findShipIndexByCoords(ships, coords, len) {
+        const normalizedShips = (ships || []).map(normalizeShipEntry).filter(Boolean);
+        return normalizedShips.findIndex(ship => ship.len === len && isSameShipCoords(ship.coords, coords));
+    }
+
+    async function beginBattleshipRelocation(meta) {
+        if (!meta || meta.source !== 'board' || !Array.isArray(meta.shipCoords)) return;
+        battleshipActiveRelocation = {
+            shipLen: meta.shipLen,
+            shipCoords: meta.shipCoords.map(([r, c]) => [r, c])
+        };
+        const live = await DataServices.battleship.fetch();
+        const copy = cloneState({ ...buildDefaultBattleshipState(), ...live });
+        const players = getBattleshipPlayers(copy);
+        players.me.ships = (players.me.ships || []).map(normalizeShipEntry).filter(Boolean);
+        const idx = findShipIndexByCoords(players.me.ships, meta.shipCoords, meta.shipLen);
+        if (idx < 0) return;
+        const removed = normalizeShipEntry(players.me.ships[idx]);
+        if (!removed) return;
+        removed.coords.forEach(([r, c]) => {
+            if (players.me.board[r] && players.me.board[r][c] !== undefined) players.me.board[r][c] = 0;
+        });
+        players.me.ships.splice(idx, 1);
+        await DataServices.battleship.save(copy);
+        await loadBattleshipState();
+    }
+
+    async function restoreBattleshipRelocation() {
+        if (!battleshipActiveRelocation) return;
+        const live = await DataServices.battleship.fetch();
+        const copy = cloneState({ ...buildDefaultBattleshipState(), ...live });
+        const players = getBattleshipPlayers(copy);
+        players.me.ships = (players.me.ships || []).map(normalizeShipEntry).filter(Boolean);
+        const exists = findShipIndexByCoords(players.me.ships, battleshipActiveRelocation.shipCoords, battleshipActiveRelocation.shipLen) >= 0;
+        if (!exists) {
+            battleshipActiveRelocation.shipCoords.forEach(([r, c]) => {
+                if (players.me.board[r] && players.me.board[r][c] !== undefined) players.me.board[r][c] = 1;
+            });
+            players.me.ships.push({
+                len: battleshipActiveRelocation.shipLen,
+                coords: battleshipActiveRelocation.shipCoords.map(([r, c]) => [r, c])
+            });
+        }
+        await DataServices.battleship.save(copy);
+        battleshipActiveRelocation = null;
+        await loadBattleshipState();
+    }
+
+    async function commitBattleshipPlacement(row, col, meta) {
+        if (!meta) return false;
+        if (battleshipRelocationPromise) await battleshipRelocationPromise;
+        const live = await DataServices.battleship.fetch();
+        const copy = cloneState({ ...buildDefaultBattleshipState(), ...live });
+        const players = getBattleshipPlayers(copy);
+        players.me.ships = (players.me.ships || []).map(normalizeShipEntry).filter(Boolean);
+        const len = Number(meta.shipLen || selectedShipLength || 0);
+        if (!len) return false;
+        if (!canPlaceBattleship(copy, row, col, len)) {
+            if (meta.source === 'board') await restoreBattleshipRelocation();
+            return false;
+        }
+        if (!placeBattleship(copy, row, col, len)) {
+            if (meta.source === 'board') await restoreBattleshipRelocation();
+            return false;
+        }
+        selectedShipLength = null;
+        clearBattleshipGhost();
+        battleshipDragMeta = null;
+        battleshipTouchDrag = null;
+        battleshipRelocationPromise = null;
+        battleshipActiveRelocation = null;
+        await DataServices.battleship.save(copy);
+        await loadBattleshipState();
+        return true;
+    }
+
+    function bindBattleshipTouchHandlers() {
+        if (battleshipTouchBound) return;
+        battleshipTouchBound = true;
+        document.addEventListener('touchmove', event => {
+            if (!battleshipTouchDrag) return;
+            event.preventDefault();
+            const touch = event.touches[0];
+            if (!touch) return;
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            const cell = target && target.closest ? target.closest('#b-my-grid .b-cell') : null;
+            if (!cell) {
+                battleshipTouchDrag.target = null;
+                clearBattleshipGhost();
+                applyBattleshipGhostClasses();
+                return;
+            }
+            const row = parseInt(cell.dataset.row || '-1', 10);
+            const col = parseInt(cell.dataset.col || '-1', 10);
+            if (row < 0 || col < 0) return;
+            const valid = buildGhostPlacement(battleshipUiState || buildDefaultBattleshipState(), row, col, battleshipTouchDrag.shipLen, battleshipTouchDrag);
+            battleshipTouchDrag.target = { row, col, valid };
+            applyBattleshipGhostClasses();
+        }, { passive: false });
+
+        document.addEventListener('touchend', async event => {
+            if (!battleshipTouchDrag) return;
+            event.preventDefault();
+            const target = battleshipTouchDrag.target;
+            const source = battleshipTouchDrag.source;
+            const meta = { ...battleshipTouchDrag };
+            if (target && target.valid) {
+                const ok = await commitBattleshipPlacement(target.row, target.col, meta);
+                battleshipDropCommitted = ok;
+            } else if (source === 'board') {
+                await restoreBattleshipRelocation();
+            }
+            battleshipTouchDrag = null;
+            clearBattleshipGhost();
+            applyBattleshipGhostClasses();
+        }, { passive: false });
+
+        document.addEventListener('touchcancel', async () => {
+            if (!battleshipTouchDrag) return;
+            if (battleshipTouchDrag.source === 'board') await restoreBattleshipRelocation();
+            battleshipTouchDrag = null;
+            clearBattleshipGhost();
+            applyBattleshipGhostClasses();
+        }, { passive: false });
+    }
+
+    function applyBattleshipGhostClasses() {
+        const root = document.getElementById('b-my-grid');
+        if (!root) return;
+        const ghostMap = new Map(battleshipGhostCells.map(cell => [`${cell.r}:${cell.c}`, cell.valid]));
+        root.querySelectorAll('.b-cell').forEach(cell => {
+            const key = `${cell.dataset.row}:${cell.dataset.col}`;
+            cell.classList.remove('ghost-valid', 'ghost-invalid');
+            if (!ghostMap.has(key)) return;
+            cell.classList.add(ghostMap.get(key) ? 'ghost-valid' : 'ghost-invalid');
+        });
+    }
+
+    function normalizeShipEntry(ship) {
+        if (Array.isArray(ship)) return { len: ship.length, coords: ship };
+        if (ship && Array.isArray(ship.coords)) return { len: ship.len || ship.coords.length, coords: ship.coords };
+        return null;
+    }
+
+    function getRemainingShipPool(me) {
+        const placed = (me.ships || []).map(normalizeShipEntry).filter(Boolean).map(s => s.len);
+        const pool = BATTLESHIP_SHIPS.slice();
+        placed.forEach(len => {
+            const idx = pool.indexOf(len);
+            if (idx >= 0) pool.splice(idx, 1);
+        });
+        return pool;
+    }
+
+    function placeBattleship(state, row, col, lenToPlace) {
+        const shipLen = lenToPlace || BATTLESHIP_SHIPS[battleshipPlacingIndex];
+        if (!shipLen || !canPlaceBattleship(state, row, col, shipLen)) return false;
+        const { me } = getBattleshipPlayers(state);
+        const dRow = battleshipAxis === 'vertical' ? 1 : 0;
+        const dCol = battleshipAxis === 'horizontal' ? 1 : 0;
+        const coords = [];
+        for (let i = 0; i < shipLen; i++) {
+            const r = row + (dRow * i);
+            const c = col + (dCol * i);
+            me.board[r][c] = 1;
+            coords.push([r, c]);
+        }
+        me.ships = me.ships || [];
+        me.ships.push({ len: shipLen, coords });
+        battleshipPlacingIndex = me.ships.length;
+        return true;
+    }
+
+    function countRemainingShips(defender, attacker) {
+        const ships = (defender.ships || []).map(normalizeShipEntry).filter(Boolean);
+        if (!ships.length) return BATTLESHIP_SHIPS.length;
+        return ships.filter(ship => !ship.coords.every(([r, c]) => attacker.attacks[r][c] === 1)).length;
+    }
+
+    function renderShipYard(me) {
+        const root = document.getElementById('b-ship-yard');
+        if (!root) return;
+        const remaining = getRemainingShipPool(me);
+        if (!remaining.length) {
+            root.innerHTML = '<div style="font-size:0.8rem; color:#64748b;">Tüm gemiler yerleştirildi.</div>';
+            selectedShipLength = null;
+            return;
+        }
+        if (!remaining.includes(selectedShipLength)) selectedShipLength = remaining[0];
+        root.innerHTML = '';
+        remaining.forEach((len, idx) => {
+            const token = document.createElement('div');
+            token.className = `ship-token ${selectedShipLength === len && idx === remaining.indexOf(selectedShipLength) ? 'selected' : ''}`;
+            token.setAttribute('draggable', 'true');
+            token.dataset.len = String(len);
+            token.title = `${len}'lük gemi`;
+            token.onclick = () => {
+                selectedShipLength = len;
+                renderShipYard(me);
+            };
+            token.addEventListener('dragstart', ev => {
+                selectedShipLength = len;
+                battleshipDropCommitted = false;
+                battleshipDragMeta = { source: 'yard', shipLen: len };
+                if (ev.dataTransfer) {
+                    ev.dataTransfer.setData('text/plain', String(len));
+                    ev.dataTransfer.effectAllowed = 'move';
+                }
+            });
+            token.addEventListener('touchstart', ev => {
+                ev.preventDefault();
+                selectedShipLength = len;
+                battleshipDropCommitted = false;
+                battleshipTouchDrag = { source: 'yard', shipLen: len, target: null };
+            }, { passive: false });
+            token.addEventListener('dragend', () => {
+                clearBattleshipGhost();
+                battleshipDragMeta = null;
+                applyBattleshipGhostClasses();
+            });
+            for (let i = 0; i < len; i++) {
+                const seg = document.createElement('span');
+                seg.className = 'ship-seg';
+                token.appendChild(seg);
+            }
+            root.appendChild(token);
+        });
+    }
+
+    function renderBattleshipGrid(rootId, boardData, clickHandler, classResolver) {
+        const root = document.getElementById(rootId);
+        if (!root) return;
+        if (!boardData || boardData.length === 0) {
+            root.innerHTML = '<div class="loading">Yükleniyor...</div>';
+            return null;
+        }
+        if (!boardData || !Array.isArray(boardData) || !boardData[0]) {
+            root.innerHTML = '<div class="loading">Yükleniyor...</div>';
+            return null;
+        }
+        root.innerHTML = '';
+        for (let r = 0; r < BATTLESHIP_SIZE; r++) {
+            for (let c = 0; c < BATTLESHIP_SIZE; c++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.dataset.row = String(r);
+                btn.dataset.col = String(c);
+                btn.className = `b-cell ${classResolver(r, c)}`.trim();
+                btn.onclick = () => clickHandler(r, c);
+                root.appendChild(btn);
+            }
+        }
+    }
+
+    function updateBattleshipStatus(state) {
+        const statusNode = document.getElementById('b-status');
+        const subStatusNode = document.getElementById('b-substatus');
+        const { me, opp, oppKey } = getBattleshipPlayers(state);
+        const oppName = oppKey === 'begum' ? 'Begüm' : 'Ömer';
+        const isMyTurn = state.turn === loggedInUser;
+        let text = '';
+        if (state.phase === 'prep') {
+            if (me.ready && !opp.ready) text = `${oppName} bekleniyor...`;
+            else if (!me.ready) text = `Gemileri yerleştir ve "Hazırım" butonuna bas. (${battleshipPlacingIndex}/${BATTLESHIP_SHIPS.length})`;
+            else text = 'Rakip hazırlandığında oyun başlayacak.';
+        } else {
+            text = isMyTurn ? 'Sıra sende: Rakip sahaya atış yap. İsabet edersen tekrar atarsın.' : `${oppName} oynuyor...`;
+        }
+        if (statusNode) statusNode.innerText = text;
+        document.getElementById('b-score-begum').innerText = String(state.begum.score || 0);
+        document.getElementById('b-score-omer').innerText = String(state.omer.score || 0);
+        document.getElementById('b-fleet-begum').innerText = String(countRemainingShips(state.begum, state.omer));
+        document.getElementById('b-fleet-omer').innerText = String(countRemainingShips(state.omer, state.begum));
+        document.getElementById('b-hit').innerText = String(me.hits || 0);
+        document.getElementById('b-miss').innerText = String(me.misses || 0);
+        document.getElementById('b-ship-left').innerText = String(countRemainingShips(opp, me));
+        document.getElementById('b-phase').innerText = state.phase === 'prep' ? 'Hazırlık' : 'Savaş';
+        const remainingPool = getRemainingShipPool(me);
+        const nextShip = remainingPool[0];
+        if (subStatusNode) {
+            if (state.phase === 'prep' && !me.ready) subStatusNode.innerText = `Sıradaki gemi: ${nextShip ? `${nextShip}'lük` : 'Tamamlandı'}`;
+            else if (state.phase === 'prep') subStatusNode.innerText = 'Hazırsın. Rakip yerleşimini tamamlıyor...';
+            else subStatusNode.innerText = 'Sıradaki gemi: Tamamlandı';
+        }
+        const readyBtn = document.getElementById('b-ready-btn');
+        if (readyBtn) readyBtn.disabled = me.ready || remainingPool.length > 0;
+        const undoBtn = document.getElementById('b-undo-btn');
+        if (undoBtn) undoBtn.disabled = me.ready || battleshipPlacingIndex <= 0;
+        const rotateBtn = document.getElementById('b-rotate-btn');
+        if (rotateBtn) rotateBtn.disabled = me.ready || remainingPool.length === 0;
+        const controls = document.querySelector('.b-controls');
+        const yard = document.getElementById('b-ship-yard');
+        const showPlacement = state.phase === 'prep' && !me.ready;
+        if (controls) controls.style.display = showPlacement ? 'flex' : 'none';
+        if (yard) yard.style.display = showPlacement ? 'flex' : 'none';
+        const oppGrid = document.getElementById('b-opp-grid');
+        if (oppGrid) oppGrid.classList.toggle('is-locked', battleshipProcessingShot || battleshipShotQueue.length > 0);
+    }
+
+    async function loadBattleshipState() {
+        if (!loggedInUser) return;
+        const state = await DataServices.battleship.fetch();
+        renderBattleship(state);
+    }
+
+    function findShipIndexAtCell(ships, row, col) {
+        for (let i = 0; i < ships.length; i++) {
+            if (ships[i].coords.some(([r, c]) => r === row && c === col)) return i;
+        }
+        return -1;
+    }
+
+    function buildGhostPlacement(state, row, col, len, dragMeta) {
+        const ignoreCoords = dragMeta?.source === 'board' && Array.isArray(dragMeta.shipCoords) ? dragMeta.shipCoords : [];
+        const valid = canPlaceBattleship(state, row, col, len, ignoreCoords);
+        const cells = buildGhostCells(row, col, len)
+            .filter(([r, c]) => r >= 0 && c >= 0 && r < BATTLESHIP_SIZE && c < BATTLESHIP_SIZE)
+            .map(([r, c]) => ({ r, c, valid }));
+        battleshipGhostCells = cells;
+        return valid;
+    }
+
+    async function processBattleshipShotQueue() {
+        if (battleshipProcessingShot) return;
+        battleshipProcessingShot = true;
+        while (battleshipShotQueue.length) {
+            const shot = battleshipShotQueue.shift();
+            const liveState = await DataServices.battleship.fetch();
+            const state = { ...buildDefaultBattleshipState(), ...liveState };
+            state.begum = { ...buildDefaultBattleshipPlayer(), ...state.begum };
+            state.omer = { ...buildDefaultBattleshipPlayer(), ...state.omer };
+            const players = getBattleshipPlayers(state);
+            if (state.phase !== 'battle' || state.turn !== loggedInUser) continue;
+            if (players.me.attacks[shot.r][shot.c] !== 0) continue;
+
+            const hit = players.opp.board[shot.r][shot.c] === 1;
+            players.me.attacks[shot.r][shot.c] = hit ? 1 : -1;
+            if (hit) players.me.hits += 1;
+            else players.me.misses += 1;
+
+            const remain = countRemainingShips(players.opp, players.me);
+            if (remain === 0) {
+                players.me.score += 1;
+                state.lastLoser = players.oppKey === 'begum' ? 'Begüm' : 'Ömer';
+                state.starter = state.lastLoser;
+                state.turn = state.lastLoser;
+                state.phase = 'prep';
+                const begumScore = state.begum.score || 0;
+                const omerScore = state.omer.score || 0;
+                state.begum = buildDefaultBattleshipPlayer();
+                state.omer = buildDefaultBattleshipPlayer();
+                state.begum.score = begumScore;
+                state.omer.score = omerScore;
+                battleshipPlacingIndex = 0;
+                await DataServices.battleship.save(state);
+                await loadBattleshipState();
+                alert('Tur bitti. Sonraki turu kaybeden oyuncu başlatır.');
+                continue;
+            }
+
+            state.turn = hit ? state.turn : ((state.turn === 'Begüm') ? 'Ömer' : 'Begüm');
+            await DataServices.battleship.save(state);
+            await loadBattleshipState();
+        }
+        battleshipProcessingShot = false;
+        await loadBattleshipState();
+    }
+
+    function renderBattleship(state) {
+        const merged = { ...buildDefaultBattleshipState(), ...state };
+        merged.begum = { ...buildDefaultBattleshipPlayer(), ...merged.begum };
+        merged.omer = { ...buildDefaultBattleshipPlayer(), ...merged.omer };
+        const { me, opp } = getBattleshipPlayers(merged);
+        me.board = normalizeBattleshipBoard(me.board);
+        me.attacks = normalizeBattleshipBoard(me.attacks);
+        opp.board = normalizeBattleshipBoard(opp.board);
+        opp.attacks = normalizeBattleshipBoard(opp.attacks);
+        battleshipUiState = cloneState(merged);
+        bindBattleshipTouchHandlers();
+        if (!Array.isArray(me.ships)) me.ships = [];
+        me.ships = me.ships.map(normalizeShipEntry).filter(Boolean);
+        if (!Array.isArray(opp.ships)) opp.ships = [];
+        opp.ships = opp.ships.map(normalizeShipEntry).filter(Boolean);
+        if (merged.phase === 'prep' && !me.ready) battleshipPlacingIndex = me.ships.length;
+        const poolNow = getRemainingShipPool(me);
+        if (!poolNow.includes(selectedShipLength)) selectedShipLength = poolNow[0] || null;
+        renderShipYard(me);
+        const shipIndexMap = new Map();
+        me.ships.forEach((ship, idx) => ship.coords.forEach(([r, c]) => shipIndexMap.set(`${r}:${c}`, idx)));
+        const myBoardClick = async (r, c) => {
+            if (merged.phase !== 'prep' || me.ready) return;
+            const live = await DataServices.battleship.fetch();
+            const copy = cloneState({ ...buildDefaultBattleshipState(), ...live });
+            const livePlayers = getBattleshipPlayers(copy);
+            livePlayers.me.ships = (livePlayers.me.ships || []).map(normalizeShipEntry).filter(Boolean);
+            const pool = getRemainingShipPool(livePlayers.me);
+            const targetLen = selectedShipLength && pool.includes(selectedShipLength) ? selectedShipLength : pool[0];
+            if (!placeBattleship(copy, r, c, targetLen)) return;
+            clearBattleshipGhost();
+            battleshipDragMeta = null;
+            await DataServices.battleship.save(copy);
+            await loadBattleshipState();
+        };
+        const oppBoardClick = async (r, c) => {
+            if (merged.phase !== 'battle' || merged.turn !== loggedInUser) return;
+            if (me.attacks[r][c] !== 0) return;
+            battleshipShotQueue.push({ r, c });
+            await processBattleshipShotQueue();
+        };
+
+        renderBattleshipGrid('b-my-grid', me.board, myBoardClick, (r, c) => {
+            const oppAttack = opp.attacks[r][c];
+            if (oppAttack === 1) return 'hit';
+            if (oppAttack === -1) return 'miss';
+            return me.board[r][c] === 1 ? 'ship' : '';
+        });
+        applyBattleshipGhostClasses();
+        if (merged.phase === 'prep' && !me.ready) {
+            document.querySelectorAll('#b-my-grid .b-cell').forEach((cell, idx) => {
+                const row = Math.floor(idx / BATTLESHIP_SIZE);
+                const col = idx % BATTLESHIP_SIZE;
+                const shipIdx = shipIndexMap.get(`${row}:${col}`);
+                if (shipIdx !== undefined) {
+                    cell.setAttribute('draggable', 'true');
+                    cell.addEventListener('dragstart', ev => {
+                        const moving = me.ships[shipIdx];
+                        if (!moving) return;
+                        battleshipDropCommitted = false;
+                        battleshipDragMeta = { source: 'board', shipLen: moving.len, shipCoords: moving.coords.map(([r0, c0]) => [r0, c0]) };
+                        battleshipRelocationPromise = beginBattleshipRelocation(battleshipDragMeta);
+                        if (ev.dataTransfer) ev.dataTransfer.setData('text/plain', String(moving.len));
+                    });
+                    cell.addEventListener('touchstart', ev => {
+                        ev.preventDefault();
+                        const moving = me.ships[shipIdx];
+                        if (!moving) return;
+                        battleshipDropCommitted = false;
+                        battleshipTouchDrag = { source: 'board', shipLen: moving.len, shipCoords: moving.coords.map(([r0, c0]) => [r0, c0]), target: null };
+                        battleshipRelocationPromise = beginBattleshipRelocation(battleshipTouchDrag);
+                    }, { passive: false });
+                    cell.addEventListener('dragend', async () => {
+                        if (battleshipRelocationPromise) await battleshipRelocationPromise;
+                        if (battleshipDragMeta?.source === 'board' && !battleshipDropCommitted) await restoreBattleshipRelocation();
+                        clearBattleshipGhost();
+                        battleshipDragMeta = null;
+                        battleshipRelocationPromise = null;
+                        applyBattleshipGhostClasses();
+                    });
+                }
+                cell.addEventListener('dragover', ev => {
+                    ev.preventDefault();
+                    const rawLen = ev.dataTransfer ? ev.dataTransfer.getData('text/plain') : '';
+                    const ghostLen = parseInt(rawLen || String(battleshipDragMeta?.shipLen || selectedShipLength || ''), 10);
+                    if (!ghostLen) return;
+                    buildGhostPlacement(merged, row, col, ghostLen, battleshipDragMeta);
+                    applyBattleshipGhostClasses();
+                });
+                cell.addEventListener('dragleave', () => {
+                    clearBattleshipGhost();
+                    applyBattleshipGhostClasses();
+                });
+                cell.addEventListener('drop', async ev => {
+                    ev.preventDefault();
+                    const rawLen = ev.dataTransfer ? ev.dataTransfer.getData('text/plain') : '';
+                    const dragLen = parseInt(rawLen || String(battleshipDragMeta?.shipLen || selectedShipLength || ''), 10);
+                    if (!dragLen) return;
+                    const meta = { ...(battleshipDragMeta || { source: 'yard', shipLen: dragLen }), shipLen: dragLen };
+                    const ok = await commitBattleshipPlacement(row, col, meta);
+                    battleshipDropCommitted = ok;
+                });
+            });
+        }
+        renderBattleshipGrid('b-opp-grid', me.attacks, oppBoardClick, (r, c) => {
+            if (me.attacks[r][c] === 1) return 'hit';
+            if (me.attacks[r][c] === -1) return 'miss';
+            return '';
+        });
+        updateBattleshipStatus(merged);
+    }
+
+    function toggleBattleshipAxis() {
+        battleshipAxis = battleshipAxis === 'horizontal' ? 'vertical' : 'horizontal';
+        const btn = document.getElementById('b-rotate-btn');
+        if (btn) btn.innerText = `Yön: ${battleshipAxis === 'horizontal' ? 'Yatay' : 'Dikey'}`;
+    }
+
+    async function markBattleshipReady() {
+        const state = await DataServices.battleship.fetch();
+        const copy = cloneState(state);
+        const { me, opp } = getBattleshipPlayers(copy);
+        me.ships = (me.ships || []).map(normalizeShipEntry).filter(Boolean);
+        if (getRemainingShipPool(me).length > 0) {
+            return alert('Tüm gemileri yerleştirmen gerekiyor.');
+        }
+        me.ready = true;
+        if (copy.phase === 'prep' && me.ready && opp.ready) {
+            const starter = copy.lastLoser || (Math.random() > 0.5 ? 'Begüm' : 'Ömer');
+            copy.phase = 'battle';
+            copy.starter = starter;
+            copy.turn = starter;
+        }
+        await DataServices.battleship.save(copy);
+        await loadBattleshipState();
+    }
+
+    async function undoLastShipPlacement() {
+        const state = await DataServices.battleship.fetch();
+        const copy = cloneState(state);
+        const { me } = getBattleshipPlayers(copy);
+        me.ships = (me.ships || []).map(normalizeShipEntry).filter(Boolean);
+        if (copy.phase !== 'prep' || me.ready || !Array.isArray(me.ships) || !me.ships.length) return;
+        const lastShip = normalizeShipEntry(me.ships.pop());
+        if (!lastShip) return;
+        lastShip.coords.forEach(([r, c]) => {
+            if (me.board[r] && me.board[r][c] !== undefined) me.board[r][c] = 0;
+        });
+        battleshipPlacingIndex = Math.max(0, me.ships.length);
+        selectedShipLength = lastShip.len;
+        await DataServices.battleship.save(copy);
+        await loadBattleshipState();
+    }
+
+    async function initBattleship() {
+        if (!loggedInUser) return;
+        if (!localStorage.getItem(LOCAL_BATTLESHIP_RESET_KEY)) {
+            const resetState = buildDefaultBattleshipState();
+            await DataServices.battleship.save(resetState);
+            localStorage.setItem(LOCAL_BATTLESHIP_RESET_KEY, '1');
+        }
+        await loadBattleshipState();
+        _supabase.channel('battleship').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: BATTLESHIP_TABLE }, async () => {
+            await loadBattleshipState();
+        }).subscribe();
+    }
+
+    function showTab(t, evt, skipStore = false) {
+        const allowed = ['xox', 'wordle', 'hangman', 'battleship'];
+        const safeTab = allowed.includes(t) ? t : 'xox';
         document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active-panel'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(t + '-panel').classList.add('active-panel');
-        if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+        const panel = document.getElementById(safeTab + '-panel');
+        if (panel) panel.classList.add('active-panel');
+        let activeBtn = null;
+        if (evt && evt.currentTarget) {
+            evt.currentTarget.classList.add('active');
+            activeBtn = evt.currentTarget;
+        } else {
+            const btn = document.querySelector(`.tab-btn[data-tab="${safeTab}"]`);
+            if (btn) {
+                btn.classList.add('active');
+                activeBtn = btn;
+            }
+        }
+        moveGameTabIndicator(activeBtn);
+        if (!skipStore) localStorage.setItem(ACTIVE_GAME_TAB_KEY, safeTab);
     }
 
     function showNextFact() { kIdx = (kIdx + 1) % kFacts.length; document.getElementById('kpss-content').innerText = kFacts[kIdx]; }
@@ -723,7 +3509,7 @@
     }
 
     async function initXOX() {
-        const { data } = await _supabase.from('xox_durumu').select('*').eq('id', 1).single();
+        const data = await fetchOrCreateSingletonRow('xox_durumu', getDefaultXoxRow());
         renderXOX(data);
         _supabase.channel('xox').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'xox_durumu' }, p => renderXOX(p.new)).subscribe();
     }
@@ -767,7 +3553,7 @@
     }
 
     async function initWordle() {
-        const { data } = await _supabase.from('wordle_durumu').select('*').eq('id', 1).single();
+        const data = await fetchOrCreateSingletonRow('wordle_durumu', getDefaultWordleRow());
         renderWordle(data);
         _supabase.channel('wordle').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'wordle_durumu' }, payload => {
             if (payload?.new) renderWordle(payload.new);
@@ -820,7 +3606,7 @@
     }
     async function submitGuess() {
         const inp = document.getElementById('w-guess'); const g = inp.value.trim().toLowerCase();
-        const { data: db } = await _supabase.from('wordle_durumu').select('*').eq('id', 1).single();
+        const db = await fetchOrCreateSingletonRow('wordle_durumu', getDefaultWordleRow());
         const ui = DataAdapters.wordle(db);
         if(ui.setter === loggedInUser) return;
         if(g.length !== ui.length) return alert(`${ui.length} harf gir!`);
@@ -890,7 +3676,7 @@
     }
 
     async function initHangman() {
-        const { data } = await _supabase.from('adam_asmaca_durumu').select('*').eq('id', 1).single();
+        const data = await fetchOrCreateSingletonRow('adam_asmaca_durumu', getDefaultHangmanRow());
         renderHangman(data);
         _supabase.channel('hangman').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'adam_asmaca_durumu' }, payload => {
             if (payload?.new) renderHangman(payload.new);
@@ -971,7 +3757,7 @@
         inp.value = '';
         if (!letter || !/^[a-zA-ZığüşöçİĞÜŞÖÇ]$/.test(letter)) return alert('Tek bir harf gir.');
 
-        const { data: db } = await _supabase.from('adam_asmaca_durumu').select('*').eq('id', 1).single();
+        const db = await fetchOrCreateSingletonRow('adam_asmaca_durumu', getDefaultHangmanRow());
         const ui = DataAdapters.hangman(db);
         if (ui.setter === loggedInUser || ui.status !== 'belirlendi') return;
         if (ui.correctLetters.includes(letter) || ui.wrongLetters.includes(letter)) return;
@@ -1086,7 +3872,8 @@
         };
         const conf = gameMap[game];
         if (!conf) return;
-        const { data } = await _supabase.from(conf.table).select('son_tur_ozeti').eq('id', 1).single();
+        const defaults = game === 'wordle' ? getDefaultWordleRow() : getDefaultHangmanRow();
+        const data = await fetchOrCreateSingletonRow(conf.table, defaults);
         document.getElementById('round-modal-title').innerText = conf.title;
         const summary = typeof data?.son_tur_ozeti === 'string'
             ? parseJsonField(data.son_tur_ozeti, null)
@@ -1116,19 +3903,35 @@
     async function updateWeekData() {
         const n = document.getElementById('new-note').value; const v = document.getElementById('new-song-id').value.trim();
         if(!v) return;
-        const res = await (await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${v}`)).json();
+        const safeVideoId = toSafeUrlParam(v);
+        const sourceWatchUrl = `https://www.youtube.com/watch?v=${v}`;
+        let songTitle = 'Bilinmeyen Şarkı';
+        try {
+            const r = await fetch(`https://noembed.com/embed?url=${toSafeUrlParam(sourceWatchUrl)}`);
+            const res = await r.json();
+            if (res?.title) songTitle = res.title;
+        } catch (err) {
+            console.warn('noembed servis hatasi, varsayilan sarki adi kullanildi', err);
+        }
         const { data: recs } = await _supabase.from('skor_verileri').select('id').order('id', { ascending: false }).limit(1);
-        await updateRowWithDebug('skor_verileri', { haftanin_notu: n, sarki_adi: res.title, sarki_linki: v }, recs[0].id);
-        await _supabase.from('sarki_gecmisi').insert([{ week_id: recs[0].id, sarki_adi: res.title, sarki_linki: v }]);
+        await updateRowWithDebug('skor_verileri', { haftanin_notu: n, sarki_adi: songTitle, sarki_linki: safeVideoId }, recs[0].id);
+        await _supabase.from('sarki_gecmisi').insert([{ week_id: recs[0].id, sarki_adi: songTitle, sarki_linki: safeVideoId }]);
         location.reload();
     }
     function showAdminIfWinner(d) { const l = d[0]; if(loggedInUser === (l.begum_sure > l.omer_sure ? "Begüm" : "Ömer")) { document.getElementById('admin-panel').style.display = 'block'; document.getElementById('new-note').value = l.haftanin_notu || ""; } }
-    function updateMusic(l) { if(l && l.sarki_linki) document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${l.sarki_linki.trim()}?rel=0&modestbranding=1" frameborder="0" allowfullscreen></iframe>`; }
+    function updateMusic(l) { if(l && l.sarki_linki) document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${toSafeUrlParam(l.sarki_linki)}?rel=0&modestbranding=1" frameborder="0" allowfullscreen></iframe>`; }
     function toMinutes(v) { if(!v) return 0; const p = v.toString().split('.'); return (parseInt(p[0])*60) + (parseInt(p[1]||0)); }
     function formatTime(tm) { return `${Math.floor(tm/60)}s ${tm%60 < 10 ? '0'+(tm%60) : tm%60}dk`; }
     function fireConfetti() { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
 
     document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('click', () => closeAllDecisionDropdowns());
+        window.addEventListener('resize', () => {
+            const activeBtn = document.querySelector('.bottom-nav-btn.active');
+            moveBottomNavIndicator(activeBtn);
+            const activeTabBtn = document.querySelector('.tab-btn.active');
+            moveGameTabIndicator(activeTabBtn);
+        });
         const remembered = getRememberedLogin();
         if ((remembered?.user === 'Begüm' || remembered?.user === 'Ömer') && remembered?.pass === '1923#') {
             setBodyThemeImmediate(true);
@@ -1137,6 +3940,8 @@
             setLoginCardActive(true);
             isLampOn = true;
             activateSession(remembered.user);
+            setTimeout(() => moveBottomNavIndicator(document.querySelector('.bottom-nav-btn.active')), 0);
+            setTimeout(() => moveGameTabIndicator(document.querySelector('.tab-btn.active')), 0);
             return;
         }
         setLoginCardActive(false);
