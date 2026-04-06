@@ -3490,15 +3490,15 @@
             const tbody = document.getElementById('table-body'); tbody.innerHTML = "";
             let tO = 0, tB = 0; let all = [];
             data.forEach(d => { if(d.omer_sure) all.push(toMinutes(d.omer_sure)); if(d.begum_sure) all.push(toMinutes(d.begum_sure)); });
-            const best = Math.max(...all);
+            const best = all.length ? Math.max(...all) : null;
             data.forEach(d => {
                 const mO = toMinutes(d.omer_sure); const mB = toMinutes(d.begum_sure);
                 tO += mO; tB += mB; const bWin = mB > mO;
                 tbody.innerHTML += `<tr><td>${d.hafta}</td>
-                    <td class="winner-cell ${bWin?'winner-text win-border':''} ${mB===best?'record-holder':''}" onclick="${bWin?'fireConfetti()':''}">
-                        ${d.begum_sure}${bWin?'👑':''}${mB===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td>
-                    <td class="winner-cell ${!bWin?'winner-text win-border':''} ${mO===best?'record-holder':''}" onclick="${!bWin?'fireConfetti()':''}">
-                        ${d.omer_sure}${!bWin?'👑':''}${mO===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td>
+                    <td class="winner-cell ${bWin?'winner-text win-border':''} ${best !== null && mB===best?'record-holder':''}" onclick="${bWin?'fireConfetti()':''}">
+                        ${d.begum_sure}${bWin?'👑':''}${best !== null && mB===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td>
+                    <td class="winner-cell ${!bWin?'winner-text win-border':''} ${best !== null && mO===best?'record-holder':''}" onclick="${!bWin?'fireConfetti()':''}">
+                        ${d.omer_sure}${!bWin?'👑':''}${best !== null && mO===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td>
                     <td style="font-size:0.75rem;">${d.sarki_adi || '-'}<br><span onclick="openHistory(${d.id})" style="cursor:pointer; font-size:1.1rem;">📜</span></td></tr>`;
             });
             document.getElementById('total-begum').innerText = formatTime(tB);
@@ -3913,12 +3913,49 @@
         } catch (err) {
             console.warn('noembed servis hatasi, varsayilan sarki adi kullanildi', err);
         }
-        const { data: recs } = await _supabase.from('skor_verileri').select('id').order('id', { ascending: false }).limit(1);
-        await updateRowWithDebug('skor_verileri', { haftanin_notu: n, sarki_adi: songTitle, sarki_linki: safeVideoId }, recs[0].id);
-        await _supabase.from('sarki_gecmisi').insert([{ week_id: recs[0].id, sarki_adi: songTitle, sarki_linki: safeVideoId }]);
+        const { data: recs } = await _supabase.from('skor_verileri').select('id,hafta,omer_sure,begum_sure').order('id', { ascending: false }).limit(1);
+        const latestWeek = recs?.[0];
+        if (!latestWeek) return;
+        const winner = getWeekWinner(latestWeek);
+        if (!winner || loggedInUser !== winner) {
+            alert('Bu hafta şarkı ekleme yetkisi yalnızca kazanan kullanıcıda.');
+            return;
+        }
+        await _supabase
+            .from('skor_verileri')
+            .update({ haftanin_notu: n, sarki_adi: songTitle, sarki_linki: safeVideoId })
+            .eq('hafta', latestWeek.hafta);
+        await _supabase.from('sarki_gecmisi').insert([{ week_id: latestWeek.id, sarki_adi: songTitle, sarki_linki: safeVideoId }]);
         location.reload();
     }
-    function showAdminIfWinner(d) { const l = d[0]; if(loggedInUser === (l.begum_sure > l.omer_sure ? "Begüm" : "Ömer")) { document.getElementById('admin-panel').style.display = 'block'; document.getElementById('new-note').value = l.haftanin_notu || ""; } }
+    function toMinutesForWinner(v) {
+        if (!v) return Number.POSITIVE_INFINITY;
+        const p = String(v).split('.');
+        const sec = Number.parseInt(p[0], 10);
+        const min = Number.parseInt(p[1] || '0', 10);
+        if (!Number.isFinite(sec) || !Number.isFinite(min)) return Number.POSITIVE_INFINITY;
+        return (sec * 60) + min;
+    }
+    function getWeekWinner(weekRow) {
+        if (!weekRow) return null;
+        const omer = toMinutesForWinner(weekRow.omer_sure);
+        const begum = toMinutesForWinner(weekRow.begum_sure);
+        if (!Number.isFinite(omer) && !Number.isFinite(begum)) return null;
+        if (omer === begum) return null;
+        return omer > begum ? 'Ömer' : 'Begüm';
+    }
+    function showAdminIfWinner(d) {
+        const panel = document.getElementById('admin-panel');
+        const note = document.getElementById('new-note');
+        if (!panel) return;
+        panel.style.display = 'none';
+        const l = d?.[0];
+        const winner = getWeekWinner(l);
+        if (winner && loggedInUser === winner) {
+            panel.style.display = 'block';
+            if (note) note.value = l?.haftanin_notu || "";
+        }
+    }
     function updateMusic(l) { if(l && l.sarki_linki) document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${toSafeUrlParam(l.sarki_linki)}?rel=0&modestbranding=1" frameborder="0" allowfullscreen></iframe>`; }
     function toMinutes(v) { if(!v) return 0; const p = v.toString().split('.'); return (parseInt(p[0])*60) + (parseInt(p[1]||0)); }
     function formatTime(tm) { return `${Math.floor(tm/60)}s ${tm%60 < 10 ? '0'+(tm%60) : tm%60}dk`; }
