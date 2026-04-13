@@ -343,6 +343,7 @@
     <div id="admin-panel">
         <h4 style="margin:0 0 5px 0">🛠️ Haftayı Güncelle</h4>
         <input type="text" id="new-note" class="admin-input" placeholder="Haftalık not..">
+        <input type="text" id="new-song-name" class="admin-input" placeholder="Şarkı adı">
         <input type="text" id="new-song-id" class="admin-input" placeholder="YouTube Video ID">
         <button id="save-btn" class="login-btn" onclick="updateWeekData()">Kaydet</button>
     </div>
@@ -3485,7 +3486,10 @@
     }
 
     async function fetchStats() {
-        const { data } = await _supabase.from('skor_verileri').select('*').order('id', { ascending: false });
+        const { data } = await _supabase
+            .from('skor_verileri')
+            .select('id,hafta,begum_sure,omer_sure,haftanin_notu,sarki_adi,sarki_linki')
+            .order('id', { ascending: false });
         if (data) {
             const tbody = document.getElementById('table-body'); tbody.innerHTML = "";
             let tO = 0, tB = 0; let all = [];
@@ -3499,7 +3503,7 @@
                         ${d.begum_sure}${bWin?'👑':''}${best !== null && mB===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td>
                     <td class="winner-cell ${!bWin?'winner-text win-border':''} ${best !== null && mO===best?'record-holder':''}" onclick="${!bWin?'fireConfetti()':''}">
                         ${d.omer_sure}${!bWin?'👑':''}${best !== null && mO===best?'🔥':''}<span class="speech-bubble">${d.haftanin_notu || '...'}</span></td>
-                    <td style="font-size:0.75rem;">${d.sarki_adi || '-'}<br><span onclick="openHistory(${d.id})" style="cursor:pointer; font-size:1.1rem;">📜</span></td></tr>`;
+                        <td style="font-size:0.75rem;">${escapeHtml(resolveSongLabel(d))}<br><span onclick="openHistory(${d.id})" style="cursor:pointer; font-size:1.1rem;">📜</span></td></tr>`;
             });
             document.getElementById('total-begum').innerText = formatTime(tB);
             document.getElementById('total-omer').innerText = formatTime(tO);
@@ -3901,18 +3905,21 @@
     }
     function closeModal() { document.getElementById('history-modal').style.display = 'none'; }
     async function updateWeekData() {
-        const n = document.getElementById('new-note').value; const v = document.getElementById('new-song-id').value.trim();
+        const n = document.getElementById('new-note').value;
+        const inputSongName = (document.getElementById('new-song-name')?.value || '').trim();
+        const v = document.getElementById('new-song-id').value.trim();
         if(!v) return;
         const safeVideoId = toSafeUrlParam(v);
         const sourceWatchUrl = `https://www.youtube.com/watch?v=${v}`;
-        let songTitle = 'Bilinmeyen Şarkı';
+        let songTitle = inputSongName || '';
         try {
             const r = await fetch(`https://noembed.com/embed?url=${toSafeUrlParam(sourceWatchUrl)}`);
             const res = await r.json();
-            if (res?.title) songTitle = res.title;
+            if (!inputSongName && res?.title) songTitle = res.title;
         } catch (err) {
             console.warn('noembed servis hatasi, varsayilan sarki adi kullanildi', err);
         }
+        if (!songTitle) songTitle = `YouTube (${v})`;
         const { data: recs } = await _supabase.from('skor_verileri').select('id,hafta,omer_sure,begum_sure').order('id', { ascending: false }).limit(1);
         const latestWeek = recs?.[0];
         if (!latestWeek) return;
@@ -3955,6 +3962,13 @@
             panel.style.display = 'block';
             if (note) note.value = l?.haftanin_notu || "";
         }
+    }
+    function resolveSongLabel(row) {
+        const safeName = String(row?.sarki_adi || '').trim();
+        if (safeName) return safeName;
+        const safeLink = String(row?.sarki_linki || '').trim();
+        if (safeLink) return `YouTube (${safeLink})`;
+        return 'Bilinmeyen Şarkı';
     }
     function updateMusic(l) { if(l && l.sarki_linki) document.getElementById('youtube-container').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${toSafeUrlParam(l.sarki_linki)}?rel=0&modestbranding=1" frameborder="0" allowfullscreen></iframe>`; }
     function toMinutes(v) { if(!v) return 0; const p = v.toString().split('.'); return (parseInt(p[0])*60) + (parseInt(p[1]||0)); }
