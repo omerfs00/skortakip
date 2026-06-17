@@ -397,14 +397,18 @@
         .qd-board.interactive .qd-cell { cursor: pointer; }
         .qd-board.interactive .qd-cell:hover { filter: brightness(1.18); }
         .qd-cell.win { animation: qdWin 0.45s ease-in-out infinite alternate; }
+        .qd-cell.last { box-shadow: 0 0 0 3px #fff, 0 0 0 5px rgba(0,0,0,0.35); }
         @keyframes qdWin { to { filter: brightness(1.4) drop-shadow(0 0 6px rgba(0,0,0,0.4)); } }
         .qd-how-btn { font-size: 0.72rem; color: #94a3b8; background: none; border: 1px solid #e2e8f0; padding: 4px 12px; border-radius: 999px; cursor: pointer; }
         .qd-how-btn:hover { background: #f8fafc; }
 
         /* ── WordNexus ── */
         .wn-setup-inputs { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
-        .wn-word-input { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 0.9rem; outline: none; box-sizing: border-box; font-family: inherit; }
+        .wn-setup-row { display: flex; align-items: center; gap: 6px; }
+        .wn-setup-num { font-size: 0.82rem; font-weight: 700; color: #94a3b8; min-width: 16px; text-align: right; }
+        .wn-word-input { flex: 1; min-width: 0; border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 10px; font-size: 0.9rem; outline: none; box-sizing: border-box; font-family: inherit; }
         .wn-word-input:focus { border-color: var(--accent); }
+        .wn-word-input-full { border-style: dashed; }
         .wn-chain-cards { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
         .wn-chain-card { background: #f8fafc; border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
         .wn-chain-card.wn-guessed { background: #f0fdf4; border-color: #86efac; }
@@ -1923,11 +1927,14 @@
     function qdEmptyBoard() { return Array.from({ length: QD_ROWS }, () => Array(QD_COLS).fill(0)); }
     function qdPlayerNum(u) { return u === 'Begüm' ? 1 : 2; }
 
+    let _qdLastMove = null; // {r, c} of last dropped piece
+
     function qdDrop(board, col, pNum) {
         for (let r = QD_ROWS - 1; r >= 0; r--) {
             if (board[r][col] === 0) {
                 const nb = board.map(row => [...row]);
                 nb[r][col] = pNum;
+                _qdLastMove = { r, c: col };
                 return nb;
             }
         }
@@ -2003,7 +2010,11 @@
             for (let c = 0; c < QD_COLS; c++) {
                 const cell = document.createElement('div');
                 const v = board[r][c];
-                cell.className = 'qd-cell' + (v === 1 ? ' p1' : v === 2 ? ' p2' : '') + (winSet.has(r+','+c) ? ' win' : '');
+                const isLast = _qdLastMove && _qdLastMove.r === r && _qdLastMove.c === c;
+                cell.className = 'qd-cell'
+                    + (v === 1 ? ' p1' : v === 2 ? ' p2' : '')
+                    + (winSet.has(r+','+c) ? ' win' : '')
+                    + (isLast && v !== 0 ? ' last' : '');
                 if (isMyTurn) cell.onclick = ((_c) => () => qdMakeMove(_c))(c);
                 boardEl.appendChild(cell);
             }
@@ -2058,6 +2069,7 @@
             ? (_qdGame.winner === 'Begüm' ? 'Ömer' : 'Begüm')
             : 'Begüm';
         _qdGame = { ..._qdGame, board: empty, current_turn: loser, winner: null, begum_score: bScore, omer_score: oScore };
+        _qdLastMove = null;
         qdRender();
         await DataServices.asyncGames.updateQuadDrop(_qdGame.id, empty, loser, null, bScore, oScore);
     }
@@ -2071,7 +2083,18 @@
             if (!_qdGame || _qdGame.winner) return;
             if (_qdGame.current_turn === loggedInUser) return;
             const { data } = await DataServices.asyncGames.getQuadDrop();
-            if (data && data.updated_at !== _qdGame.updated_at) { _qdGame = data; qdRender(); }
+            if (data && data.updated_at !== _qdGame.updated_at) {
+                const oldBoard = _qdGame.board;
+                _qdGame = data;
+                // find the newly placed piece to highlight it
+                _qdLastMove = null;
+                outer: for (let r = 0; r < QD_ROWS; r++) {
+                    for (let c = 0; c < QD_COLS; c++) {
+                        if (data.board[r][c] !== 0 && oldBoard[r][c] === 0) { _qdLastMove = { r, c }; break outer; }
+                    }
+                }
+                qdRender();
+            }
         }, 6000);
     }
 
@@ -2098,19 +2121,21 @@
         return word.split('').slice(0, n).map(ch => ch.toUpperCase()).join(' ');
     }
 
-    // Build answers array: base form + suffix-stripped variant if ends in vowel
-    function wnBuildAnswers(raw) {
-        const base = raw.toLowerCase().trim();
-        const answers = [base];
-        if (base.length > 3 && 'aeıioöuü'.includes(base[base.length - 1])) {
-            answers.push(base.slice(0, -1));
-        }
-        return answers;
+    // Kelimeyi {k: kök, t: tam} olarak sakla
+    function wnBuildWord(root, full) {
+        const k = root.toLowerCase().trim();
+        const t = (full || '').toLowerCase().trim() || k;
+        return { k, t };
     }
 
-    function wnIsCorrect(guess, answers) {
+    // Kök veya tam form döndür (eski string/array formatıyla geriye dönük uyumlu)
+    function wnWordRoot(w)    { return (w && w.k) ? w.k : (Array.isArray(w) ? w[0] : (w || '')); }
+    function wnWordDisplay(w) { return (w && w.t) ? w.t : (Array.isArray(w) ? w[0] : (w || '')); }
+
+    // Eşleşme: kök veya tam form doğruysa kabul et
+    function wnIsCorrect(guess, word) {
         const g = wnNorm(guess);
-        return (answers || []).some(a => wnNorm(a) === g);
+        return g === wnNorm(wnWordRoot(word)) || g === wnNorm(wnWordDisplay(word));
     }
 
     function wnEmptyBoard(begumScore, omerScore, starter) {
@@ -2194,27 +2219,33 @@
     }
 
     function wnRenderSetup(el) {
-        const partner = loggedInUser === 'Begüm' ? 'Ömer' : 'Begüm';
+        let rows = '';
+        for (let i = 1; i <= 5; i++) {
+            rows += '<div class="wn-setup-row">'
+                + '<span class="wn-setup-num">' + i + '.</span>'
+                + '<input class="wn-word-input" id="wn-k' + i + '" placeholder="Kök (örn: düğme)" maxlength="24"'
+                + ' onkeydown="if(event.key===\'Enter\')document.getElementById(\'wn-t' + i + '\').focus();">'
+                + '<input class="wn-word-input wn-word-input-full" id="wn-t' + i + '" placeholder="Tam hali (örn: düğmesi)" maxlength="24"'
+                + ' onkeydown="if(event.key===\'Enter\'&&' + i + '<5)document.getElementById(\'wn-k' + (i+1) + '\').focus();else if(event.key===\'Enter\'&&' + i + '===5)wnSubmitWords();">'
+                + '</div>';
+        }
         el.innerHTML = '<div style="color:#475569;font-size:0.83rem;line-height:1.6;margin-bottom:12px;">'
-            + '<b>' + escapeHtml(partner) + '</b> senin kelimelerini çözmeye çalışacak. '
-            + 'İlk kelime açık, diğerleri kilitli görünür.</div>'
-            + '<div class="wn-setup-inputs">'
-            + [1,2,3,4,5].map(i =>
-                '<input class="wn-word-input" id="wn-w' + i + '" placeholder="' + i + '. kelime" maxlength="24"'
-                + ' onkeydown="if(event.key===\'Enter\'&&' + i + '<5)document.getElementById(\'wn-w' + (i+1) + '\').focus();else if(event.key===\'Enter\'&&' + i + '===5)wnSubmitWords()">'
-            ).join('')
-            + '</div>'
+            + 'Her kelime için <b>kök</b> ve <b>tam halini</b> ayrı yaz. '
+            + 'Tahmin ederken ikisi de geçerli sayılır.</div>'
+            + '<div class="wn-setup-inputs">' + rows + '</div>'
             + '<button class="login-btn" style="width:100%;margin-top:4px;" onclick="wnSubmitWords()">🔒 Kilitle ve Başla</button>'
             + '<div class="wn-msg" id="wn-msg"></div>';
-        const first = document.getElementById('wn-w1');
+        const first = document.getElementById('wn-k1');
         if (first) first.focus();
     }
 
     async function wnSubmitWords() {
-        const raws = [1,2,3,4,5].map(i => { const el = document.getElementById('wn-w' + i); return el ? el.value.trim() : ''; });
+        const words = [1,2,3,4,5].map(i => {
+            const ke = document.getElementById('wn-k' + i); const te = document.getElementById('wn-t' + i);
+            return wnBuildWord(ke ? ke.value.trim() : '', te ? te.value.trim() : '');
+        });
         const msg = document.getElementById('wn-msg');
-        if (raws.some(w => !w)) { if (msg) { msg.style.color='#ef4444'; msg.textContent='5 kelimeyi de doldurun.'; } return; }
-        const words = raws.map(wnBuildAnswers);
+        if (words.some(w => !w.k)) { if (msg) { msg.style.color='#ef4444'; msg.textContent='5 kelimenin kökünü de doldurun.'; } return; }
 
         const { data: latest } = await DataServices.asyncGames.getWordNexus();
         if (latest) _wnGame = latest;
@@ -2243,17 +2274,19 @@
         wnRender();
     }
 
-    // answers = array like ["konsolu","konsol"]; display uses answers[0]
-    function wnChainCard(state, answers, hintCount) {
-        const display = Array.isArray(answers) ? answers[0] : answers;
+    // word = {k: root, t: full} object (or legacy string/array)
+    function wnChainCard(state, word, hintCount) {
+        const root = wnWordRoot(word);
+        const full = wnWordDisplay(word);
         if (state === 'guessed') {
             return '<div class="wn-chain-card wn-guessed">'
-                + '<span>✅</span><span class="wn-word-reveal">' + escapeHtml(display.toUpperCase()) + '</span>'
+                + '<span>✅</span><span class="wn-word-reveal">' + escapeHtml(full.toUpperCase()) + '</span>'
                 + '</div>';
         }
         if (state === 'active') {
+            const revealText = hintCount >= root.length ? root.toUpperCase() : wnReveal(root, hintCount);
             return '<div class="wn-chain-card wn-active">'
-                + '<div class="wn-word-reveal">' + escapeHtml(wnReveal(display, hintCount)) + '</div>'
+                + '<div class="wn-word-reveal">' + escapeHtml(revealText) + '</div>'
                 + '<div class="wn-guess-row">'
                 + '<input class="wn-guess-input" id="wn-guess-input" placeholder="tahmin…" maxlength="40" onkeydown="if(event.key===\'Enter\')wnGuess()">'
                 + '<button class="wn-guess-btn" onclick="wnGuess()">Tahmin Et</button>'
@@ -2261,9 +2294,9 @@
                 + '</div>'
                 + '</div>';
         }
-        // locked — only first letter, no length hint
+        // locked — only first letter of root
         return '<div class="wn-chain-card wn-locked">'
-            + '<span>🔒</span><span class="wn-word-reveal">' + escapeHtml(display[0].toUpperCase()) + '</span>'
+            + '<span>🔒</span><span class="wn-word-reveal">' + escapeHtml(root[0].toUpperCase()) + '</span>'
             + '</div>';
     }
 
@@ -2279,7 +2312,7 @@
             + '<div class="wn-chain-cards">';
         for (let i = 0; i < 5; i++) {
             if (i < myIdx)        html += wnChainCard('guessed', theirWords[i], 0);
-            else if (i === myIdx) html += wnChainCard('active',  theirWords[i], myHints[i]);
+            else if (i === myIdx) html += wnChainCard('active', theirWords[i], i === 0 ? 99 : myHints[i]);
             else                  html += wnChainCard('locked',  theirWords[i], 1);
         }
         html += '</div>';
@@ -2313,10 +2346,10 @@
         html += '<div class="wn-section-label">Senin zincirine (' + escapeHtml(theirName) + ' çözüyor)</div>'
             + '<div class="wn-chain-cards">';
         for (let i = 0; i < 5; i++) {
-            const display = Array.isArray(myWords[i]) ? myWords[i][0] : myWords[i];
+            const root = wnWordRoot(myWords[i]);
             if (i < theirIdx)        html += wnChainCard('guessed', myWords[i], 0);
             else if (i === theirIdx) html += '<div class="wn-chain-card wn-active" style="pointer-events:none;">'
-                + '<div class="wn-word-reveal">' + escapeHtml(wnReveal(display, theirHints[i])) + '</div>'
+                + '<div class="wn-word-reveal">' + escapeHtml(i === 0 ? root.toUpperCase() : wnReveal(root, theirHints[i])) + '</div>'
                 + '<div style="font-size:0.75rem;color:#64748b;margin-top:4px;">🎯 Çözülüyor…</div></div>';
             else                     html += wnChainCard('locked', myWords[i], 1);
         }
@@ -2325,10 +2358,10 @@
         html += '<div class="wn-section-label">Senin ilerlemen (' + escapeHtml(theirName) + '\'in zinciri)</div>'
             + '<div class="wn-chain-cards">';
         for (let i = 0; i < 5; i++) {
-            const display = Array.isArray(theirWords[i]) ? theirWords[i][0] : theirWords[i];
+            const root = wnWordRoot(theirWords[i]);
             if (i < myIdx)        html += wnChainCard('guessed', theirWords[i], 0);
             else if (i === myIdx) html += '<div class="wn-chain-card wn-locked" style="opacity:0.7;">'
-                + '<span>⏸️</span><span class="wn-word-reveal">' + escapeHtml(wnReveal(display, myHints[i])) + '</span></div>';
+                + '<span>⏸️</span><span class="wn-word-reveal">' + escapeHtml(wnReveal(root, myHints[i])) + '</span></div>';
             else                  html += wnChainCard('locked', theirWords[i], 1);
         }
         html += '</div>';
@@ -2358,7 +2391,7 @@
             await DataServices.asyncGames.saveWordNexus(_wnGame.id, b);
             if (b.winner) { wnRender(); return; }
             if (msg) { msg.style.color = '#16a34a'; msg.textContent = '✅ Doğru! Sıra sende kalıyor.'; }
-            setTimeout(() => wnRender(), 700);
+            setTimeout(() => wnRender(), 300);
         } else {
             const partner = theirKey === 'begum' ? 'Begüm' : 'Ömer';
             b.current_turn = partner;
@@ -2366,7 +2399,7 @@
             _wnGame.updated_at = new Date().toISOString();
             await DataServices.asyncGames.saveWordNexus(_wnGame.id, b);
             if (msg) { msg.style.color = '#ef4444'; msg.textContent = '❌ Yanlış! Sıra ' + escapeHtml(partner) + '\'e geçti.'; }
-            setTimeout(() => wnRender(), 1100);
+            setTimeout(() => wnRender(), 500);
         }
     }
 
@@ -2377,8 +2410,8 @@
         const theirWords = b[theirKey + '_words'];
         const myIdx = b[myKey + '_idx'];
         const cur = b[myKey + '_hints'][myIdx];
-        const displayWord = Array.isArray(theirWords[myIdx]) ? theirWords[myIdx][0] : theirWords[myIdx];
-        if (cur < displayWord.length) b[myKey + '_hints'][myIdx] = cur + 1;
+        const rootLen = wnWordRoot(theirWords[myIdx]).length;
+        if (cur < rootLen) b[myKey + '_hints'][myIdx] = cur + 1;
         const partner = theirKey === 'begum' ? 'Begüm' : 'Ömer';
         b.current_turn = partner;
         _wnGame.board = b;
