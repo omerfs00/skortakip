@@ -390,10 +390,14 @@
         .qd-drop-btn { padding: 5px 0; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
         .qd-drop-btn:active { transform: scale(0.88); }
         .qd-drop-btn:disabled { opacity: 0.22; cursor: not-allowed; transform: none; }
-        .qd-board { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: #94a3b8; padding: 8px; border-radius: 14px; margin-bottom: 8px; }
-        .qd-cell { aspect-ratio: 1; border-radius: 50%; background: rgba(255,255,255,0.52); }
-        .qd-cell.p1 { background: var(--accent); }
-        .qd-cell.p2 { background: #f59e0b; }
+        .qd-board { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: #c8d5e2; padding: 8px; border-radius: 14px; margin-bottom: 8px; }
+        .qd-cell { aspect-ratio: 1; border-radius: 50%; background: rgba(255,255,255,0.7); }
+        .qd-cell.p1 { background: var(--qd-p1, #ef4444); }
+        .qd-cell.p2 { background: var(--qd-p2, #f59e0b); }
+        .qd-color-row { display: flex; gap: 5px; margin-top: 5px; justify-content: center; }
+        .qd-color-dot { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s, border-color 0.15s; flex-shrink: 0; }
+        .qd-color-dot:hover { transform: scale(1.25); }
+        .qd-color-dot.selected { border-color: #334155; transform: scale(1.15); }
         .qd-board.interactive .qd-cell { cursor: pointer; }
         .qd-board.interactive .qd-cell:hover { filter: brightness(1.18); }
         .qd-cell.win { animation: qdWin 0.45s ease-in-out infinite alternate; }
@@ -525,11 +529,13 @@
                     <div class="qd-player-block">
                         <div class="qd-player-name">Begüm</div>
                         <div class="qd-player-score p1" id="qd-score-begum">0</div>
+                        <div class="qd-color-row" id="qd-colors-p1"></div>
                     </div>
                     <div class="qd-vs-badge">VS</div>
                     <div class="qd-player-block">
                         <div class="qd-player-score p2" id="qd-score-omer">0</div>
                         <div class="qd-player-name">Ömer</div>
+                        <div class="qd-color-row" id="qd-colors-p2"></div>
                     </div>
                 </div>
                 <div id="qd-status" class="qd-status">Yükleniyor…</div>
@@ -1923,34 +1929,45 @@
 
     // ── QuadDrop ──────────────────────────────────────────────
     const QD_ROWS = 6, QD_COLS = 7;
+    const QD_COLORS    = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899'];
+    const QD_DEFAULT_P1 = '#ef4444';
+    const QD_DEFAULT_P2 = '#f59e0b';
 
-    function qdEmptyBoard() { return Array.from({ length: QD_ROWS }, () => Array(QD_COLS).fill(0)); }
+    // board = { cells: [[...]], p1_color, p2_color } — eski format (düz dizi) normalize edilir
+    function qdNormalizeBoard(raw) {
+        if (!raw) return { cells: Array.from({ length: QD_ROWS }, () => Array(QD_COLS).fill(0)), p1_color: null, p2_color: null };
+        if (Array.isArray(raw)) return { cells: raw, p1_color: null, p2_color: null };
+        return raw;
+    }
+    function qdEmptyBoard(p1Color, p2Color) {
+        return { cells: Array.from({ length: QD_ROWS }, () => Array(QD_COLS).fill(0)), p1_color: p1Color || null, p2_color: p2Color || null };
+    }
     function qdPlayerNum(u) { return u === 'Begüm' ? 1 : 2; }
 
-    let _qdLastMove = null; // {r, c} of last dropped piece
+    let _qdLastMove = null;
 
-    function qdDrop(board, col, pNum) {
+    function qdDropGrid(grid, col, pNum) {
         for (let r = QD_ROWS - 1; r >= 0; r--) {
-            if (board[r][col] === 0) {
-                const nb = board.map(row => [...row]);
-                nb[r][col] = pNum;
+            if (grid[r][col] === 0) {
+                const ng = grid.map(row => [...row]);
+                ng[r][col] = pNum;
                 _qdLastMove = { r, c: col };
-                return nb;
+                return ng;
             }
         }
         return null;
     }
 
-    function qdCheckWin(board, pNum) {
+    function qdCheckWin(grid, pNum) {
         const dirs = [[0,1],[1,0],[1,1],[1,-1]];
         for (let r = 0; r < QD_ROWS; r++) {
             for (let c = 0; c < QD_COLS; c++) {
-                if (board[r][c] !== pNum) continue;
+                if (grid[r][c] !== pNum) continue;
                 for (const [dr, dc] of dirs) {
                     const cells = [[r, c]];
                     for (let i = 1; i < 4; i++) {
                         const nr = r + dr*i, nc = c + dc*i;
-                        if (nr < 0 || nr >= QD_ROWS || nc < 0 || nc >= QD_COLS || board[nr][nc] !== pNum) break;
+                        if (nr < 0 || nr >= QD_ROWS || nc < 0 || nc >= QD_COLS || grid[nr][nc] !== pNum) break;
                         cells.push([nr, nc]);
                     }
                     if (cells.length === 4) return cells;
@@ -1974,11 +1991,32 @@
             return;
         }
 
-        const board = game.board;
+        const board = game.board; // already normalized on load/poll
+        const grid  = board.cells;
+        const p1Color = board.p1_color || QD_DEFAULT_P1;
+        const p2Color = board.p2_color || QD_DEFAULT_P2;
+        boardEl.style.setProperty('--qd-p1', p1Color);
+        boardEl.style.setProperty('--qd-p2', p2Color);
+
+        // render color pickers
+        const cp1 = document.getElementById('qd-colors-p1');
+        const cp2 = document.getElementById('qd-colors-p2');
+        [['p1', cp1, p1Color], ['p2', cp2, p2Color]].forEach(([pKey, el, cur]) => {
+            if (!el) return;
+            el.innerHTML = '';
+            QD_COLORS.forEach(color => {
+                const dot = document.createElement('div');
+                dot.className = 'qd-color-dot' + (color === cur ? ' selected' : '');
+                dot.style.background = color;
+                dot.onclick = () => qdSetColor(pKey, color);
+                el.appendChild(dot);
+            });
+        });
+
         const myNum = qdPlayerNum(loggedInUser);
         const isMyTurn = !game.winner && game.current_turn === loggedInUser;
         const winnerNum = game.winner && game.winner !== 'draw' ? qdPlayerNum(game.winner) : null;
-        const winCells = winnerNum ? qdCheckWin(board, winnerNum) : null;
+        const winCells = winnerNum ? qdCheckWin(grid, winnerNum) : null;
         const winSet = winCells ? new Set(winCells.map(([r,c]) => r + ',' + c)) : new Set();
 
         if (statusEl) {
@@ -1998,7 +2036,7 @@
                 const btn = document.createElement('button');
                 btn.className = 'qd-drop-btn';
                 btn.textContent = '↓';
-                btn.disabled = !isMyTurn || board[0][c] !== 0;
+                btn.disabled = !isMyTurn || grid[0][c] !== 0;
                 btn.onclick = ((_c) => () => qdMakeMove(_c))(c);
                 dropRow.appendChild(btn);
             }
@@ -2009,7 +2047,7 @@
         for (let r = 0; r < QD_ROWS; r++) {
             for (let c = 0; c < QD_COLS; c++) {
                 const cell = document.createElement('div');
-                const v = board[r][c];
+                const v = grid[r][c];
                 const isLast = _qdLastMove && _qdLastMove.r === r && _qdLastMove.c === c;
                 cell.className = 'qd-cell'
                     + (v === 1 ? ' p1' : v === 2 ? ' p2' : '')
@@ -2024,18 +2062,19 @@
 
         const bScoreEl = document.getElementById('qd-score-begum');
         const oScoreEl = document.getElementById('qd-score-omer');
-        if (bScoreEl) bScoreEl.textContent = game.begum_score || 0;
-        if (oScoreEl) oScoreEl.textContent = game.omer_score || 0;
+        if (bScoreEl) { bScoreEl.textContent = game.begum_score || 0; bScoreEl.style.color = p1Color; }
+        if (oScoreEl) { oScoreEl.textContent = game.omer_score  || 0; oScoreEl.style.color = p2Color; }
     }
 
     async function qdLoadGame() {
         const { data, error } = await DataServices.asyncGames.getQuadDrop();
         if (error) { console.error('[QuadDrop] yükleme hatası:', error); return; }
         if (!data) {
-            const { data: created } = await DataServices.asyncGames.createQuadDrop(qdEmptyBoard());
-            if (created) _qdGame = created;
+            const empty = qdEmptyBoard();
+            const { data: created } = await DataServices.asyncGames.createQuadDrop(empty);
+            if (created) _qdGame = { ...created, board: empty };
         } else {
-            _qdGame = data;
+            _qdGame = { ...data, board: qdNormalizeBoard(data.board) };
         }
         qdRender();
     }
@@ -2043,12 +2082,13 @@
     async function qdMakeMove(col) {
         if (!_qdGame || _qdGame.winner || _qdGame.current_turn !== loggedInUser) return;
         const board = _qdGame.board;
-        if (!Array.isArray(board) || board[0][col] !== 0) return;
+        if (board.cells[0][col] !== 0) return;
         const pNum = qdPlayerNum(loggedInUser);
-        const newBoard = qdDrop(board, col, pNum);
-        if (!newBoard) return;
-        const winCells = qdCheckWin(newBoard, pNum);
-        const isDraw = !winCells && newBoard[0].every(v => v !== 0);
+        const newCells = qdDropGrid(board.cells, col, pNum);
+        if (!newCells) return;
+        const newBoard = { ...board, cells: newCells };
+        const winCells = qdCheckWin(newCells, pNum);
+        const isDraw = !winCells && newCells[0].every(v => v !== 0);
         const winner = winCells ? loggedInUser : (isDraw ? 'draw' : null);
         const nextTurn = loggedInUser === 'Begüm' ? 'Ömer' : 'Begüm';
         const bScore = (_qdGame.begum_score || 0) + (winner === 'Begüm' ? 1 : 0);
@@ -2060,9 +2100,19 @@
         else if (winCells) fireConfetti();
     }
 
+    async function qdSetColor(pKey, color) {
+        if (!_qdGame) return;
+        const field = pKey === 'p1' ? 'p1_color' : 'p2_color';
+        const newBoard = { ..._qdGame.board, [field]: color };
+        _qdGame = { ..._qdGame, board: newBoard };
+        qdRender();
+        await DataServices.asyncGames.updateQuadDrop(_qdGame.id, newBoard, _qdGame.current_turn, _qdGame.winner, _qdGame.begum_score, _qdGame.omer_score);
+    }
+
     async function qdNewGame() {
         if (!_qdGame) { await qdLoadGame(); return; }
-        const empty = qdEmptyBoard();
+        const cur = _qdGame.board;
+        const empty = qdEmptyBoard(cur.p1_color, cur.p2_color);
         const bScore = _qdGame.begum_score || 0;
         const oScore = _qdGame.omer_score  || 0;
         const loser = (_qdGame.winner && _qdGame.winner !== 'draw')
@@ -2084,13 +2134,13 @@
             if (_qdGame.current_turn === loggedInUser) return;
             const { data } = await DataServices.asyncGames.getQuadDrop();
             if (data && data.updated_at !== _qdGame.updated_at) {
-                const oldBoard = _qdGame.board;
-                _qdGame = data;
-                // find the newly placed piece to highlight it
+                const oldGrid = _qdGame.board.cells;
+                _qdGame = { ...data, board: qdNormalizeBoard(data.board) };
+                const newGrid = _qdGame.board.cells;
                 _qdLastMove = null;
                 outer: for (let r = 0; r < QD_ROWS; r++) {
                     for (let c = 0; c < QD_COLS; c++) {
-                        if (data.board[r][c] !== 0 && oldBoard[r][c] === 0) { _qdLastMove = { r, c }; break outer; }
+                        if (newGrid[r][c] !== 0 && oldGrid[r][c] === 0) { _qdLastMove = { r, c }; break outer; }
                     }
                 }
                 qdRender();
