@@ -394,7 +394,7 @@
         .qd-cell { aspect-ratio: 1; border-radius: 50%; background: rgba(255,255,255,0.7); }
         .qd-cell.p1 { background: var(--qd-p1, #ef4444); }
         .qd-cell.p2 { background: var(--qd-p2, #f59e0b); }
-        .qd-color-row { display: flex; gap: 5px; margin-top: 5px; justify-content: center; }
+        .qd-color-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; justify-content: center; max-width: 100%; }
         .qd-color-dot { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s, border-color 0.15s; flex-shrink: 0; }
         .qd-color-dot:hover { transform: scale(1.25); }
         .qd-color-dot.selected { border-color: #334155; transform: scale(1.15); }
@@ -533,8 +533,8 @@
                     </div>
                     <div class="qd-vs-badge">VS</div>
                     <div class="qd-player-block">
-                        <div class="qd-player-score p2" id="qd-score-omer">0</div>
                         <div class="qd-player-name">Ömer</div>
+                        <div class="qd-player-score p2" id="qd-score-omer">0</div>
                         <div class="qd-color-row" id="qd-colors-p2"></div>
                     </div>
                 </div>
@@ -2350,6 +2350,16 @@
             + '</div>';
     }
 
+    async function wnAutoAcceptFirst(b) {
+        const myKey = loggedInUser === 'Begüm' ? 'begum' : 'omer';
+        const nb = JSON.parse(JSON.stringify(b));
+        nb[myKey + '_idx'] = 1;
+        _wnGame.board = nb;
+        _wnGame.updated_at = new Date().toISOString();
+        await DataServices.asyncGames.saveWordNexus(_wnGame.id, nb);
+        wnRender();
+    }
+
     function wnRenderMyTurn(el, b) {
         const myKey    = loggedInUser === 'Begüm' ? 'begum' : 'omer';
         const theirKey = myKey === 'begum' ? 'omer' : 'begum';
@@ -2357,6 +2367,8 @@
         const theirWords = b[theirKey + '_words'];
         const myIdx   = b[myKey + '_idx'];
         const myHints = b[myKey + '_hints'];
+
+        if (myIdx === 0) { wnAutoAcceptFirst(b); return; }
 
         let html = '<div class="wn-status">🎯 Sıra sende — <b>' + escapeHtml(theirName) + '</b>\'in zincirini çöz</div>'
             + '<div class="wn-chain-cards">';
